@@ -1,0 +1,15 @@
+# folders
+
+.vscode/
+build/
+dbs/
+eggs/
+items/
+logs/
+project.egg-info/
+
+# files
+
+*.pyc
+setup.py
+twistd.pid
