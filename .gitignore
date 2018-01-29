@@ -13,3 +13,4 @@ project.egg-info/
 *.pyc
 setup.py
 twistd.pid
+secrets
