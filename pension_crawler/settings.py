@@ -7,11 +7,18 @@ import os
 
 BOT_NAME = 'pension_crawler'
 SPIDER_MODULES = ['pension_crawler.spiders']
-ITEM_PIPELINES = {'scrapy.pipelines.files.FilesPipeline': 1}
+ITEM_PIPELINES = {
+    'scrapy.pipelines.files.FilesPipeline': 1,
+    'pension_crawler.pipelines.ResultItemCSVExportPipeline': 900
+}
 FILES_STORE = os.path.join(os.getcwd(), 'downloads')
 
 
 # custom settings
+
+INPUT_FILE = 'input.csv'
+OUTPUT_FILE = 'output.csv'
+FIELDS_TO_EXPORT = ['keyword', 'url', 'title', 'path']
 
 SEARCH_ENGINE_ID = os.getenv('SEARCH_ENGINE_ID')
 API_KEY = os.getenv('API_KEY')
