@@ -37,11 +37,15 @@ class ResultItemCSVExportPipeline(object):
 
     def process_item(self, item, *args, **kwargs):
         '''Export item to csv file and return item.'''
+        try:
+            path = item['files'][0]['path']
+        except IndexError:
+            path = None
         data = {
             'keyword': item['keyword'],
             'url': item['url'],
             'title': item['title'],
-            'path': item['files'][0]['path']
+            'path': path
         }
         self.exporter.export_item(data)
         return item
