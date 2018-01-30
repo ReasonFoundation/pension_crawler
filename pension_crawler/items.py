@@ -9,6 +9,7 @@ class ResultItem(Item):
 
     '''Result item.'''
 
+    keyword = Field()
     total = Field()
     url = Field()
     title = Field()
