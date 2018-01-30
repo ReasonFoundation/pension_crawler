@@ -7,6 +7,8 @@ import os
 
 BOT_NAME = 'pension_crawler'
 SPIDER_MODULES = ['pension_crawler.spiders']
+ITEM_PIPELINES = {'scrapy.pipelines.files.FilesPipeline': 1}
+FILES_STORE = os.path.join(os.getcwd(), 'downloads')
 
 
 # custom settings

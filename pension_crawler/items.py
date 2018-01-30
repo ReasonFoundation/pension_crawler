@@ -13,6 +13,8 @@ class ResultItem(Item):
     url = Field()
     title = Field()
     snippet = Field()
+    file_urls = Field()
+    files = Field()
     timestamp = Field()
 
 

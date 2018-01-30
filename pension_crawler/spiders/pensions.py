@@ -16,28 +16,46 @@ class PensionsSpider(Spider):
 
     name = 'pensions'
 
-    def __init__(self, engine_id, api_key, depth, keywords, *args, **kwargs):
+    def __init__(self, crawler, engine_id, api_key, depth, keywords, *args,
+                 **kwargs):
         '''Set search engine id, api key, search depth and keywords.'''
         super(PensionsSpider, self).__init__(*args, **kwargs)
+        self.crawler = crawler
         self.engine_id = engine_id
         self.api_key = api_key
         self.depth = depth
         self.keywords = keywords
 
-    @classmethod
-    def from_crawler(cls, crawler, *args, **kwargs):
-        '''Pass settings to constructor.'''
-        engine_id = crawler.settings.get('SEARCH_ENGINE_ID')
-        api_key = crawler.settings.get('API_KEY')
-        depth = crawler.settings.get('SEARCH_DEPTH')
-        keywords = json.loads(kwargs.get('keywords'))
+    @staticmethod
+    def parse_args(args):
+        '''Parse arguments comming from command.'''
+        keywords = json.loads(args.pop('keywords'), '[]')
+        if not keywords:
+            raise NotConfigured('Keyword list not provided as argument.')
+        return keywords
+
+    @staticmethod
+    def parse_settings(settings):
+        '''Parse arguments comming from Scrapy settings.'''
+        engine_id = settings.get('SEARCH_ENGINE_ID')
+        api_key = settings.get('API_KEY')
+        depth = settings.get('SEARCH_DEPTH')
         if not engine_id:
             raise NotConfigured('Search engine ID not set in settings.')
         if not api_key:
             raise NotConfigured('API key not set in settings.')
-        if not keywords:
-            raise NotConfigured('Keyword list not provided as argument.')
-        return cls(engine_id, api_key, depth, keywords, *args, **kwargs)
+        return engine_id, api_key, depth
+
+    @classmethod
+    def from_crawler(cls, crawler, *args, **kwargs):
+        '''Pass settings to constructor.'''
+        keywords = PensionsSpider.parse_args(kwargs)
+        engine_id, api_key, depth = PensionsSpider.parse_settings(
+            crawler.settings
+        )
+        return cls(
+            crawler, engine_id, api_key, depth, keywords, *args, **kwargs
+        )
 
     def start_requests(self):
         '''Dispatch requests per keyword.'''
@@ -63,6 +81,7 @@ class PensionsSpider(Spider):
         for result in data['items']:
             item = self.process_item(result)
             item.setdefault('total', data['searchInformation']['totalResults'])
+            item.setdefault('file_urls', [item['url']])
             yield item
         start = data['queries']['nextPage'][0]['startIndex']
         count = data['queries']['nextPage'][0]['count']
