@@ -16,45 +16,54 @@ class PensionsSpider(Spider):
 
     name = 'pensions'
 
-    def __init__(self, crawler, engine_id, api_key, depth, keywords, *args,
+    def __init__(self, crawler, keywords, engine_id, api_key, depth, *args,
                  **kwargs):
         '''Set search engine id, api key, search depth and keywords.'''
         super(PensionsSpider, self).__init__(*args, **kwargs)
         self.crawler = crawler
+        self.keywords = keywords
         self.engine_id = engine_id
         self.api_key = api_key
         self.depth = depth
-        self.keywords = keywords
 
     @staticmethod
-    def parse_args(args):
-        '''Parse arguments comming from command.'''
-        keywords = json.loads(args.pop('keywords'), '[]')
+    def parse_keywords(path):
+        '''Read search keywrods from input file.'''
+        keywords = []
+        try:
+            with open(path, 'r') as file_:
+                for line in file_.readlines():
+                    keywords.append(line.strip().lower())
+        except IOError:
+            raise NotConfigured('Could not read input file.')
         if not keywords:
-            raise NotConfigured('Keyword list not provided as argument.')
+            raise NotConfigured('Keyword list is empty.')
         return keywords
 
     @staticmethod
     def parse_settings(settings):
-        '''Parse arguments comming from Scrapy settings.'''
+        '''Read search keywrods from input file.'''
+        input_file = settings.get('INPUT_FILE')
         engine_id = settings.get('SEARCH_ENGINE_ID')
         api_key = settings.get('API_KEY')
         depth = settings.get('SEARCH_DEPTH')
+        if not input_file:
+            raise NotConfigured('Input file not set.')
         if not engine_id:
-            raise NotConfigured('Search engine ID not set in settings.')
+            raise NotConfigured('Search engine ID not set.')
         if not api_key:
-            raise NotConfigured('API key not set in settings.')
-        return engine_id, api_key, depth
+            raise NotConfigured('API key not set.')
+        return input_file, engine_id, api_key, depth
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         '''Pass settings to constructor.'''
-        keywords = PensionsSpider.parse_args(kwargs)
-        engine_id, api_key, depth = PensionsSpider.parse_settings(
+        input_file, engine_id, api_key, depth = PensionsSpider.parse_settings(
             crawler.settings
         )
+        keywords = PensionsSpider.parse_keywords(input_file)
         return cls(
-            crawler, engine_id, api_key, depth, keywords, *args, **kwargs
+            crawler, keywords, engine_id, api_key, depth, *args, **kwargs
         )
 
     def start_requests(self):
@@ -65,8 +74,7 @@ class PensionsSpider(Spider):
             url = base.format(self.engine_id, self.api_key, keyword)
             yield Request(url)
 
-
-    def process_item(self, result):
+    def process_result(self, result):
         '''Load single result item.'''
         loader = ResultItemLoader()
         loader.add_value('url', result['link'])
@@ -79,7 +87,10 @@ class PensionsSpider(Spider):
         '''Parse search results.'''
         data = json.loads(response.body_as_unicode())
         for result in data['items']:
-            item = self.process_item(result)
+            item = self.process_result(result)
+            item.setdefault(
+                'keyword', data['queries']['request'][0]['searchTerms']
+            )
             item.setdefault('total', data['searchInformation']['totalResults'])
             item.setdefault('file_urls', [item['url']])
             yield item
