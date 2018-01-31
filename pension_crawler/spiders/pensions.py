@@ -68,8 +68,8 @@ class PensionsSpider(Spider):
 
     def start_requests(self):
         '''Dispatch requests per keyword.'''
-        base = 'https://www.googleapis.com/customsearch/v1?cx={}&key={}&q={}&f'\
-            'ileType=pdf'
+        base = 'https://www.googleapis.com/customsearch/v1?cx={}&key={}&q={} a'\
+            'ctuarial valuation&fileType=pdf'
         for keyword in self.keywords:
             url = base.format(self.engine_id, self.api_key, keyword)
             yield Request(url)
