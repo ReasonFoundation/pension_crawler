@@ -1,7 +1,7 @@
 '''pipelines.py'''
 
 from scrapy.exceptions import NotConfigured
-from scrapy.contrib.exporter import CsvItemExporter
+from scrapy.exporters import CsvItemExporter
 
 
 class ResultItemCSVExportPipeline(object):
