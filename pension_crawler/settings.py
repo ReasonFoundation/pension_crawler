@@ -11,6 +11,9 @@ ITEM_PIPELINES = {
     'scrapy.pipelines.files.FilesPipeline': 1,
     'pension_crawler.pipelines.ResultItemCSVExportPipeline': 900
 }
+DOWNLOADER_MIDDLEWARES = {
+    'pension_crawler.middlewares.RequestBlacklistMiddleware': 400
+}
 FILES_STORE = os.path.join(os.getcwd(), 'data', 'downloads')
 FIELDS_TO_EXPORT = ['keyword', 'url', 'title', 'path']
 
@@ -19,6 +22,7 @@ FIELDS_TO_EXPORT = ['keyword', 'url', 'title', 'path']
 
 INPUT_FILE = os.path.join(os.getcwd(), 'data', 'input.csv')
 OUTPUT_FILE = os.path.join(os.getcwd(), 'data', 'output.csv')
+BLACKLIST_FILE = os.path.join(os.getcwd(), 'data', 'blacklist.csv')
 
 SEARCH_ENGINE_ID = os.getenv('SEARCH_ENGINE_ID')
 API_KEY = os.getenv('API_KEY')
