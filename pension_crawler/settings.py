@@ -11,6 +11,9 @@ ITEM_PIPELINES = {
     'scrapy.pipelines.files.FilesPipeline': 1,
     'pension_crawler.pipelines.ResultItemCSVExportPipeline': 900
 }
+DOWNLOADER_MIDDLEWARES = {
+    'pension_crawler.middlewares.RequestBlacklistMiddleware': 400
+}
 FILES_STORE = os.path.join(os.getcwd(), 'data', 'downloads')
 FIELDS_TO_EXPORT = ['keyword', 'url', 'title', 'path']
 
