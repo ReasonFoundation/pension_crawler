@@ -25,6 +25,14 @@ function check_root() {
 check_root
 
 
+# Sleep for n seconds
+
+function do_wait() {
+  _print "Sleeping for $1 seconds"
+  sleep $1
+}
+
+
 # Install system dependencies
 
 function configure_system() {
@@ -52,14 +60,20 @@ function configure_python() {
 }
 
 
-# Start supervisord with environment variables and deploy project
+# Start supervisord with environment variables
 
-function configure_scrapyd() {
+function configure_supervisor() {
   cp scrapyd.conf /etc/supervisor/conf.d/scrapyd.conf
   ENVIRONMENT=$(sed 's/^/  /; $!s/$/,/' secrets)
   echo -e "environment=\n$ENVIRONMENT" >> /etc/supervisor/conf.d/scrapyd.conf
   supervisorctl reread && supervisorctl update
-  _print "Scrapyd running."
+  _print "Supervisord configured and running."
+}
+
+
+# Deploy project
+
+function configure_scrapyd() {
   scrapyd-deploy
   _print "Scrapy project deployed."
 }
@@ -70,6 +84,8 @@ function configure_scrapyd() {
 function main() {
   configure_system
   configure_python
+  configure_supervisor
+  do_wait 10
   configure_scrapyd
   _print "Script finished."
 }
