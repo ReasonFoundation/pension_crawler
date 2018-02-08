@@ -3,27 +3,30 @@
 import os
 
 
-# scrapy settings
+# Development settings. Comment out when in production.
+
+HTTPCACHE_ENABLED = True
+
+
+# Scrapy settings
 
 BOT_NAME = 'pension_crawler'
-SPIDER_MODULES = ['pension_crawler.spiders']
+SPIDER_MODULES = ['pension_crawler.google', 'pension_crawler.bing']
+DOWNLOADER_MIDDLEWARES = {
+    'pension_crawler.middlewares.RequestBlacklistMiddleware': 400
+}
 ITEM_PIPELINES = {
     'scrapy.pipelines.files.FilesPipeline': 1,
     'pension_crawler.pipelines.ResultItemCSVExportPipeline': 900
 }
-DOWNLOADER_MIDDLEWARES = {
-    'pension_crawler.middlewares.RequestBlacklistMiddleware': 400
-}
-FILES_STORE = os.path.join(os.getcwd(), 'data', 'downloads')
 FIELDS_TO_EXPORT = ['keyword', 'url', 'title', 'path']
+DOWNLOAD_DELAY = 1  # slow down crawling
 
 
-# custom settings
+# Custom settings
 
-INPUT_FILE = os.path.join(os.getcwd(), 'data', 'input.csv')
-OUTPUT_FILE = os.path.join(os.getcwd(), 'data', 'output.csv')
-BLACKLIST_FILE = os.path.join(os.getcwd(), 'data', 'blacklist.csv')
+DATA_DIR = os.path.join(os.getcwd(), 'data')
+INPUT_FILE = os.path.join(DATA_DIR, 'input.csv')
+BLACKLIST_FILE = os.path.join(DATA_DIR, 'blacklist.csv')
 
-SEARCH_ENGINE_ID = os.getenv('SEARCH_ENGINE_ID')
-API_KEY = os.getenv('API_KEY')
-SEARCH_DEPTH = int(os.getenv('SEARCH_DEPTH', 1))
+RESULT_DEPTH = 0  # visit first page only
