@@ -33,6 +33,13 @@ To provision and deploy the spider on a Ubuntu based Linux instance run the prov
 ./provision.sh
 ```
 
+If not the root user, try the following:
+
+```
+sudo chmod +x provision.sh
+sudo ./provision.sh
+```
+
 To schedule spider run using Scrapyd HTTP API issue the following command:
 
 ```
@@ -41,4 +48,4 @@ curl http://<server-ip>:6800/schedule.json -d project=pension_crawler -d spider=
 
 To check the status of the running tasks visit the following endpoint in a browser: http://<server-ip>:6800/jobs
 
-**TODO:** Develop bing spider
+
