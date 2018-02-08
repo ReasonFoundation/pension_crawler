@@ -3,8 +3,8 @@ setup.py
 twistd.pid
 secrets
 
-bing/
-google/
+data/bing/
+data/google/
 build/
 dbs/
 eggs/
