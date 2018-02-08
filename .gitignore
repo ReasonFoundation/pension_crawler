@@ -1,16 +1,15 @@
-# folders
+*.pyc
+setup.py
+twistd.pid
+secrets
 
-.vscode/
+bing/
+google/
 build/
 dbs/
 eggs/
 items/
 logs/
 project.egg-info/
-
-# files
-
-*.pyc
-setup.py
-twistd.pid
-secrets
+.scrapy/
+.vscode/
