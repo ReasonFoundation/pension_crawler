@@ -66,7 +66,7 @@ class BingSpider(Spider, SpiderMixin):
     def parse(self, response):
         '''Parse search results.'''
         data = json.loads(response.body_as_unicode())
-        for node in data['webPages']['value']:
+        for node in data.get('webPages', {}).get('value', []):
             item = self.process_item(node)
             item['keyword'] = data['queryContext']['originalQuery']
             item['total'] = data['webPages']['totalEstimatedMatches']

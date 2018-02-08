@@ -75,7 +75,7 @@ class GoogleSpider(Spider, SpiderMixin):
     def parse(self, response):
         '''Parse search results.'''
         data = json.loads(response.body_as_unicode())
-        for result in data['items']:
+        for result in data.get('items', []):
             item = self.process_item(result)
             item['keyword'] = data['queries']['request'][0]['searchTerms']
             item['total'] = data['searchInformation']['totalResults']
