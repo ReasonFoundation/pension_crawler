@@ -1,6 +1,7 @@
 *.pyc
 setup.py
 twistd.pid
+secrets
 
 data/bing/
 data/google/
