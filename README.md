@@ -40,7 +40,7 @@ Before you start the crawl process make sure you load the environment variables 
 export VAR_NAME=VAR_VALUE
 ```
 
-Than source the .bashrc file to load the environment variables into your current environment.
+Then source the .bashrc file to load the environment variables into your current environment.
 
 ```
 source ~/.bashrc
