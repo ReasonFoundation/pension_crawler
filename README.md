@@ -22,31 +22,11 @@ Bellow are the datapoints extracted from search engine results:
 - result title
 - result snippet
 
+***IMPORTANT!*** The environment variables containing Google and Bing API keys are located in the secrets file and should be changed when running in production.
+
 ### Running localy
 
-To run the crawler localy you will need to install system and python dependencies.
-
-To install system dependencies follow Scrapy platform specific installation [guides](https://doc.scrapy.org/en/latest/intro/install.html#intro-install-platform-notes).
-
-To install python dependencies, create [virtual environment](https://docs.python.org/3/tutorial/venv.html) where you will run the project, go to crawler deployments folder and execute:
-
-```
-pip install -r requirements.txt
-```
-
-Before you start the crawl process make sure you load the environment variables into the environment. Locate the .basrc file (Most systems have it under ~/.bashrc) and append the following text at the end of the file for every variable you have.
-
-```
-export VAR_NAME=VAR_VALUE
-```
-
-Than source the .bashrc file to load the environment variables into your current environment.
-
-```
-source ~/.bashrc
-```
-
-***IMPORTANT!*** The environment variables are located in the secrets file and should be changed.
+This project includes provisioning and deployment scripts for running the crawlers locally on a Debian based server. After the project is deployed we can control the spiders using [Scrapy CLI](https://doc.scrapy.org/en/latest/topics/commands.html).
 
 The input for the spiders is a CSV file located at the data directory named input.csv. To start the crawl process run the following commands:
 
@@ -57,6 +37,10 @@ scrapy crawl <spider-name>
 You should start seeing scrapy logs after command execution.
 
 During the crawl process PDF files from result links are downloaded to data/spider-name/downloads/full folder. After the crawl process is finished the results are saved to an CSV output file named output.csv located in data/spider-name. The CSV file contains paths to dowloaded PDFs per result.
+
+Make sure you are running python 3.5 or above. Running python 2.7, for instance, will cause errors like ImportError among others.
+
+For Mac users, refer to this link: https://apple.stackexchange.com/questions/106778/how-do-i-set-environment-variables-on-os-x with how to set environmental variables. Another approach would be to directly hardcode it in either the google or bing folder's settings.py file.
 
 ### Deployment
 
