@@ -48,7 +48,7 @@ source ~/.bashrc
 
 ***IMPORTANT!*** The environment variables are located in the secrets file and should be changed.
 
-The input for the spiders is a CSV file located at the data/<spider-name> directory named input.csv. To start the crawl process run the following commands:
+The input for the spiders is a CSV file located at the data directory named input.csv. To start the crawl process run the following commands:
 
 ```
 scrapy crawl <spider-name>
@@ -56,7 +56,7 @@ scrapy crawl <spider-name>
 
 You should start seeing scrapy logs after command execution.
 
-During the crawl process PDF files from result links are downloaded to data/<spider-name>/downloads/full folder. After the crawl process is finished the results are saved to an CSV output file named output.csv located in data/<spider-name>. The CSV file contains paths to dowloaded PDFs per result.
+During the crawl process PDF files from result links are downloaded to data/spider-name/downloads/full folder. After the crawl process is finished the results are saved to an CSV output file named output.csv located in data/spider-name. The CSV file contains paths to dowloaded PDFs per result.
 
 ### Deployment
 
@@ -79,7 +79,7 @@ sudo ./provision.sh
 ```
 
 After the script is finished you should be able to access Scrapyd jobs endpoint at the following url:
-http://<server-ip>:6800/jobs
+http://server-ip:6800/jobs
 
 To schedule a job remotely issue an HTTP POST request to the following endpoint with the following data. Example using curl:
 
@@ -89,4 +89,4 @@ curl http://<server-ip>:6800/schedule.json -d project=pension_crawler -d spider=
 
 For more info on scheduling jobs visit Scrapyd [documentation](https://scrapyd.readthedocs.io/en/stable/api.html#schedule-json)
 
-The scraped items and logs can be viewed from Scrapyd web interface located at http://<server-ip>:6800/jobs.
+The scraped items and logs can be viewed from Scrapyd web interface located at http://server-ip:6800/jobs.
