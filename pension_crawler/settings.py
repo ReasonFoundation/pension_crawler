@@ -13,7 +13,7 @@ DOWNLOADER_MIDDLEWARES = {
 }
 ITEM_PIPELINES = {
     'scrapy.pipelines.files.FilesPipeline': 1,
-    'pension_crawler.pipelines.ResultItemCSVExportPipeline': 900
+    'pension_crawler.pipelines.PDFDownloadPipeline': 900
 }
 FIELDS_TO_EXPORT = ['keyword', 'url', 'title', 'path']
 
@@ -34,4 +34,4 @@ DATA_DIR = os.path.join(os.getcwd(), 'data')
 INPUT_FILE = os.path.join(DATA_DIR, 'input.csv')
 BLACKLIST_FILE = os.path.join(DATA_DIR, 'blacklist.csv')
 
-RESULT_DEPTH = 0
+NO_DOWNLOAD = False

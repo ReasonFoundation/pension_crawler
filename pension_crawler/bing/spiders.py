@@ -21,13 +21,15 @@ class BingSpider(Spider, SpiderMixin):
     name = 'bing'
     custom_settings = SETTINGS
 
-    def __init__(self, crawler, keywords, api_key, depth, *args, **kwargs):
+    def __init__(self, crawler, keywords, api_key, depth, modifier, *args,
+                 **kwargs):
         '''Set api key, search depth and keywords.'''
         super(BingSpider, self).__init__(*args, **kwargs)
         self.crawler = crawler
         self.keywords = keywords
         self.api_key = api_key
         self.depth = depth
+        self.modifier = modifier
 
     @staticmethod
     def parse_spider_settings(settings):
@@ -40,19 +42,20 @@ class BingSpider(Spider, SpiderMixin):
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         '''Pass settings to constructor.'''
-        input_file, depth = BingSpider.parse_settings(crawler.settings)
+        input_file, depth, modifier = BingSpider.parse_settings(
+            crawler.settings
+        )
         api_key = BingSpider.parse_spider_settings(crawler.settings)
         keywords = BingSpider.parse_keywords(input_file)
-        return cls(crawler, keywords, api_key, depth, *args, **kwargs)
+        return cls(crawler, keywords, api_key, depth, modifier, *args, **kwargs)
 
     def start_requests(self):
         '''Dispatch requests per keyword.'''
-        modifier = 'actuarial valuation filetype:pdf'
         base = 'https://api.cognitive.microsoft.com/bing/v7.0/search?q={}'
         headers = {"Ocp-Apim-Subscription-Key" : self.api_key}
         for keyword in self.keywords:
-            url = base.format(quote_plus('{} {}'.format(keyword, modifier)))
-            yield Request(url, headers=headers)
+            query = '{} {} filetype:pdf'.format(keyword, self.modifier)
+            yield Request(base.format(quote_plus(query)), headers=headers)
 
     def process_item(self, node):
         '''Load single result item.'''
