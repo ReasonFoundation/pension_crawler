@@ -21,15 +21,19 @@ class GoogleSpider(Spider, SpiderMixin):
     name = 'google'
     custom_settings = SETTINGS
 
-    def __init__(self, crawler, keywords, engine_id, api_key, depth, *args,
-                 **kwargs):
-        '''Set search engine id, api key, search depth and keywords.'''
+    def __init__(self, crawler, keywords, engine_id, api_key, depth, modifier,
+                 *args, **kwargs):
+        '''
+        Set keywords, search engine id, api key, search depth and keyword
+        modifier.
+        '''
         super(GoogleSpider, self).__init__(*args, **kwargs)
         self.crawler = crawler
         self.keywords = keywords
         self.engine_id = engine_id
         self.api_key = api_key
         self.depth = depth
+        self.modifier = modifier
 
     @staticmethod
     def parse_spider_settings(settings):
@@ -45,22 +49,30 @@ class GoogleSpider(Spider, SpiderMixin):
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         '''Pass settings to constructor.'''
-        input_file, depth = GoogleSpider.parse_settings(crawler.settings)
+        input_file, depth, modifier = GoogleSpider.parse_settings(
+            crawler.settings
+        )
         engine_id, api_key, = GoogleSpider.parse_spider_settings(
             crawler.settings
         )
         keywords = GoogleSpider.parse_keywords(input_file)
         return cls(
-            crawler, keywords, engine_id, api_key, depth, *args, **kwargs
+            crawler,
+            keywords,
+            engine_id,
+            api_key,
+            depth,
+            modifier,
+            *args,
+            **kwargs
         )
 
     def start_requests(self):
         '''Dispatch requests per keyword.'''
-        modifier = 'actuarial valuation filetype:pdf'
         base = 'https://www.googleapis.com/customsearch/v1?cx={}&key={}&q={}'
         for keyword in self.keywords:
-            keyword = quote_plus('{} {}'.format(keyword, modifier))
-            url = base.format(self.engine_id, self.api_key, keyword)
+            query = '{} {} filetype:pdf'.format(keyword, self.modifier)
+            url = base.format(self.engine_id, self.api_key, quote_plus(query))
             yield Request(url)
 
     def process_item(self, node):
