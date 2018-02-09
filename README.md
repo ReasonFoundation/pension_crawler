@@ -22,9 +22,6 @@ Bellow are the datapoints extracted from search engine results:
 - result title
 - result snippet
 
-### Spider specifics
-
-
 ### Running localy
 
 To run the crawler localy you will need to install system and python dependencies.
@@ -37,14 +34,19 @@ To install python dependencies, create [virtual environment](https://docs.python
 pip install -r requirements.txt
 ```
 
-Before you start the crawl process make sure you load the environment variables into the environment. To do so execute the following command per variable:
+Before you start the crawl process make sure you load the environment variables into the environment. Locate the .basrc file (Most systems have it under ~/.bashrc) and append the following text at the end of the file for every variable you have.
 
 ```
 export VAR_NAME=VAR_VALUE
 ```
 
-***IMPORTANT!*** The environment variables are located in the secrets file and should be changed.
+Than source the .bashrc file to load the environment variables into your current environment.
 
+```
+source ~/.bashrc
+```
+
+***IMPORTANT!*** The environment variables are located in the secrets file and should be changed.
 
 The input for the spiders is a CSV file located at the data/<spider-name> directory named input.csv. To start the crawl process run the following commands:
 
