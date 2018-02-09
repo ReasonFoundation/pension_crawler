@@ -24,6 +24,8 @@ Bellow are the datapoints extracted from search engine results:
 
 ### Running localy
 
+Make sure you are running python 3.5 or above. Running python 2.7, for instance, will cause errors like ImportError among others.
+
 To run the crawler localy you will need to install system and python dependencies.
 
 To install system dependencies follow Scrapy platform specific installation [guides](https://doc.scrapy.org/en/latest/intro/install.html#intro-install-platform-notes).
@@ -45,6 +47,8 @@ Then source the .bashrc file to load the environment variables into your current
 ```
 source ~/.bashrc
 ```
+
+For Mac users, refer to this link: https://apple.stackexchange.com/questions/106778/how-do-i-set-environment-variables-on-os-x with how to set environmental variables. Another approach would be to directly hardcode it in either the google or bing folder's settings.py file.
 
 ***IMPORTANT!*** The environment variables are located in the secrets file and should be changed.
 
