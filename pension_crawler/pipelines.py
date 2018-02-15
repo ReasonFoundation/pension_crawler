@@ -102,9 +102,9 @@ class SitesExportPipeline(BaseCSVPipeline):
     def export_item(self, item, *args, **kwargs):
         '''Export item to csv file.'''
         data = {
-            'parent': item['keyword'],
             'url': item['url'],
-            'text': item['title'],
+            'href': item['href'],
+            'text': item.get('text'),
             'path': self.get_path(item)
         }
         self.exporter.export_item(data)
