@@ -1,10 +1,10 @@
 *.pyc
 setup.py
 twistd.pid
-secrets
+secrets.py
 
-data/bing/
-data/google/
+downloads/
+output/
 build/
 dbs/
 eggs/
