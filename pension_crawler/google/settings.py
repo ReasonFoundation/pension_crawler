@@ -18,7 +18,7 @@ SETTINGS = {
 
     # Custom settings
 
-    'INPUT_FILE': os.path.join(DATA_DIR, 'input', 'google', 'default.csv'),
+    'INPUT_FILE': os.path.join(DATA_DIR, 'input', 'google', 'default.txt'),
     'OUTPUT_DIR': os.path.join(DATA_DIR, 'output', 'google'),
     'KEYWORD_MODIFIER': 'actuarial valuation',
     'SITE': None,
