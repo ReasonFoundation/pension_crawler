@@ -18,5 +18,5 @@ SETTINGS = {
         'scrapy.pipelines.files.FilesPipeline': 1,
         'pension_crawler.pipelines.SitesExportPipeline': 300
     },
-    'FIELDS_TO_EXPORT': ['parent', 'url', 'text']
+    'FIELDS_TO_EXPORT': ['url', 'href', 'text', 'path']
 }
