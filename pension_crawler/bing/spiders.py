@@ -21,14 +21,15 @@ class BingSpider(Spider, SpiderMixin):
     name = 'bing'
     custom_settings = SETTINGS
 
-    def __init__(self, crawler, keywords, modifier, depth, freshness, api_key,
-                 *args, **kwargs):
-        '''Set queries, modifier, depth, freshness and api key.'''
+    def __init__(self, crawler, keywords, modifier, depth, site, freshness,
+                 api_key, *args, **kwargs):
+        '''Set queries, modifier, depth, freshness, site and api key.'''
         super(BingSpider, self).__init__(*args, **kwargs)
         self.crawler = crawler
         self.keywords = keywords
         self.modifier = modifier
         self.depth = depth
+        self.site = site
         self.freshness = freshness
         self.api_key = api_key
 
@@ -42,7 +43,7 @@ class BingSpider(Spider, SpiderMixin):
         '''Parse custom spider settings.'''
         freshness = settings.get('FRESHNESS')
         api_key = settings.get('API_KEY')
-        if not BingSpider.validate_freshness(freshness):
+        if freshness and not BingSpider.validate_freshness(freshness):
             raise NotConfigured('Invalid freshness parameter.')
         if not api_key:
             raise NotConfigured('Google API key not set.')
@@ -51,7 +52,7 @@ class BingSpider(Spider, SpiderMixin):
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         '''Pass settings to constructor.'''
-        keywords, depth, modifier = BingSpider.parse_common_settings(
+        keywords, depth, modifier, site = BingSpider.parse_common_settings(
             kwargs, crawler.settings
         )
         freshness, api_key = BingSpider.parse_spider_settings(crawler.settings)
@@ -60,6 +61,7 @@ class BingSpider(Spider, SpiderMixin):
             keywords,
             modifier,
             depth,
+            site,
             freshness,
             api_key,
             *args,
@@ -67,14 +69,16 @@ class BingSpider(Spider, SpiderMixin):
         )
 
     @property
-    def headers(self, query):
+    def headers(self):
         '''Return request headers.'''
         return {'Ocp-Apim-Subscription-Key' : self.api_key}
 
     def get_url(self, query):
         '''Return request url.'''
-        data = {'q': self.get_query(query), 'freshness': self.freshness}
-        base = 'https://api.cognitive.microsoft.com/bing/v7.0/search?q={}'
+        data = {'q': self.get_query(query)}
+        if self.freshness:
+            data['freshness'] = self.freshness
+        base = 'https://api.cognitive.microsoft.com/bing/v7.0/search?{}'
         return base.format(urlencode(data))
 
     def start_requests(self):

@@ -21,17 +21,18 @@ class GoogleSpider(Spider, SpiderMixin):
     name = 'google'
     custom_settings = SETTINGS
 
-    def __init__(self, crawler, keywords, modifier, depth, start_date, end_date,
-                 engine_id, api_key, *args, **kwargs):
+    def __init__(self, crawler, keywords, modifier, depth, site, start_date,
+                 end_date, engine_id, api_key, *args, **kwargs):
         '''
-        Set queries, modifier, depth, start and end date, search engine id and
-        api key.
+        Set queries, modifier, depth, site, start and end date, search engine
+        id and api key.
         '''
         super(GoogleSpider, self).__init__(*args, **kwargs)
         self.crawler = crawler
         self.keywords = keywords
         self.modifier = modifier
         self.depth = depth
+        self.site = site
         self.start_date = start_date
         self.end_date = end_date
         self.engine_id = engine_id
@@ -52,9 +53,9 @@ class GoogleSpider(Spider, SpiderMixin):
         end_date = settings.get('END_DATE')
         engine_id = settings.get('SEARCH_ENGINE_ID')
         api_key = settings.get('API_KEY')
-        if not GoogleSpider.validate_date(start_date):
+        if start_date and not GoogleSpider.validate_date(start_date):
             raise NotConfigured('Invalid start date parameter.')
-        if not GoogleSpider.validate_date(end_date):
+        if end_date and not GoogleSpider.validate_date(end_date):
             raise NotConfigured('Invalid end date parameter.')
         if not engine_id:
             raise NotConfigured('Google search engine ID not set.')
@@ -65,7 +66,7 @@ class GoogleSpider(Spider, SpiderMixin):
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         '''Pass settings to constructor.'''
-        keywords, depth, modifier = GoogleSpider.parse_common_settings(
+        keywords, depth, modifier, site = GoogleSpider.parse_common_settings(
             kwargs, crawler.settings
         )
         spider_settings_data = GoogleSpider.parse_spider_settings(
@@ -77,6 +78,7 @@ class GoogleSpider(Spider, SpiderMixin):
             keywords,
             modifier,
             depth,
+            site,
             start_date,
             end_date,
             engine_id,

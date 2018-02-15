@@ -40,7 +40,7 @@ class SitesSpider(Spider):
     @staticmethod
     def get_list_from_args(args):
         '''Return values from spider arguments.'''
-        start_urls = args.pop('start_urls')
+        start_urls = args.pop('start_urls', None)
         if not start_urls:
             return
         try:
