@@ -3,12 +3,12 @@
 import json
 
 from datetime import datetime
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlencode
 
 from scrapy import Spider, Request
 from scrapy.exceptions import NotConfigured
 
-from pension_crawler.items import ResultItemLoader
+from pension_crawler.items import ResultLoader
 from pension_crawler.utils import SpiderMixin
 
 from .settings import SETTINGS
@@ -21,63 +21,97 @@ class GoogleSpider(Spider, SpiderMixin):
     name = 'google'
     custom_settings = SETTINGS
 
-    def __init__(self, crawler, keywords, engine_id, api_key, depth, modifier,
-                 *args, **kwargs):
+    def __init__(self, crawler, keywords, modifier, depth, start_date, end_date,
+                 engine_id, api_key, *args, **kwargs):
         '''
-        Set keywords, search engine id, api key, search depth and keyword
-        modifier.
+        Set queries, modifier, depth, start and end date, search engine id and
+        api key.
         '''
         super(GoogleSpider, self).__init__(*args, **kwargs)
         self.crawler = crawler
         self.keywords = keywords
+        self.modifier = modifier
+        self.depth = depth
+        self.start_date = start_date
+        self.end_date = end_date
         self.engine_id = engine_id
         self.api_key = api_key
-        self.depth = depth
-        self.modifier = modifier
+
+    @staticmethod
+    def validate_date(date):
+        '''Validate date in correct format.'''
+        try:
+            return datetime.strptime(date, '%Y%m%d')
+        except ValueError:
+            pass
 
     @staticmethod
     def parse_spider_settings(settings):
         '''Parse custom spider settings.'''
+        start_date = settings.get('START_DATE')
+        end_date = settings.get('END_DATE')
         engine_id = settings.get('SEARCH_ENGINE_ID')
         api_key = settings.get('API_KEY')
+        if not GoogleSpider.validate_date(start_date):
+            raise NotConfigured('Invalid start date parameter.')
+        if not GoogleSpider.validate_date(end_date):
+            raise NotConfigured('Invalid end date parameter.')
         if not engine_id:
             raise NotConfigured('Google search engine ID not set.')
         if not api_key:
             raise NotConfigured('Google API key not set.')
-        return engine_id, api_key
+        return start_date, end_date, engine_id, api_key
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         '''Pass settings to constructor.'''
-        input_file, depth, modifier = GoogleSpider.parse_settings(
+        keywords, depth, modifier = GoogleSpider.parse_common_settings(
+            kwargs, crawler.settings
+        )
+        spider_settings_data = GoogleSpider.parse_spider_settings(
             crawler.settings
         )
-        engine_id, api_key, = GoogleSpider.parse_spider_settings(
-            crawler.settings
-        )
-        keywords = GoogleSpider.parse_keywords(input_file)
+        start_date, end_date, engine_id, api_key = spider_settings_data
         return cls(
             crawler,
             keywords,
+            modifier,
+            depth,
+            start_date,
+            end_date,
             engine_id,
             api_key,
-            depth,
-            modifier,
             *args,
             **kwargs
         )
 
+    @property
+    def sort(self):
+        '''Return search sort by date parameter.'''
+        if self.start_date and self.end_date:
+            return 'date:r:{}:{}'.format(self.start_date, self.end_date)
+
+    def get_url(self, query):
+        '''Return request url.'''
+        data = {
+            'cx': self.engine_id,
+            'key': self.api_key,
+            'q': self.get_query(query)
+        }
+        sort = self.sort
+        if sort:
+            data['sort'] = sort
+        base = 'https://www.googleapis.com/customsearch/v1?{}'
+        return base.format(urlencode(data))
+
     def start_requests(self):
         '''Dispatch requests per keyword.'''
-        base = 'https://www.googleapis.com/customsearch/v1?cx={}&key={}&q={}'
         for keyword in self.keywords:
-            query = '{} {} filetype:pdf'.format(keyword, self.modifier)
-            url = base.format(self.engine_id, self.api_key, quote_plus(query))
-            yield Request(url)
+            yield Request(self.get_url(keyword))
 
     def process_item(self, node):
         '''Load single result item.'''
-        loader = ResultItemLoader()
+        loader = ResultLoader()
         loader.add_value('url', node['link'])
         loader.add_value('title', node['title'])
         loader.add_value('snippet', node['snippet'])
