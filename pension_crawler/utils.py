@@ -50,9 +50,10 @@ class SpiderMixin(object):
     @staticmethod
     def get_keywords(args, settings):
         keywords = SpiderMixin.get_list_from_args(args)
-        if not keywords:
-            logger.info('Keyword list from args is empty.')
-            keywords = SpiderMixin.get_list_from_file(settings)
+        if keywords:
+            return keywords
+        logger.info('Keyword list from args is empty.')
+        keywords = SpiderMixin.get_list_from_file(settings)
         if not keywords:
             raise NotConfigured('Keyword list from file is empty.')
         return keywords
