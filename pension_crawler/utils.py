@@ -39,7 +39,7 @@ class SpiderMixin(object):
     @staticmethod
     def get_list_from_args(args):
         '''Return values from spider arguments.'''
-        keywords = args.pop('keywords')
+        keywords = args.pop('keywords', None)
         if not keywords:
             return
         try:
@@ -63,11 +63,10 @@ class SpiderMixin(object):
         keywords = SpiderMixin.get_keywords(args, settings)
         depth = settings.get('RESULT_DEPTH')
         modifier = settings.get('KEYWORD_MODIFIER')
-        return keywords, depth, modifier
+        site = settings.get('SITE')
+        return keywords, depth, modifier, site
 
-    def get_query(self, query):
+    def get_query(self, keyword):
         '''Return search query.'''
-        modifier = 'filetype:pdf'
-        if self.modifier:
-            modifier = '{} {}'.format(self.modifier, modifier)
-        return '{} {}'.format(query, modifier)
+        query = [keyword, self.modifier, self.site, 'filetype:pdf']
+        return ' '.join([i for i in query if i])
