@@ -36,7 +36,6 @@ SETTINGS = {
     'ITEM_PIPELINES': item_pipelines,
     'FIELDS_TO_EXPORT': fields_to_export,
     'COOKIES_ENABLED': False,
-    'REDIRECT_ENABLED': False,
     'RETRY_ENABLED': False,
     'DOWNLOAD_TIMEOUT': 90,
     'DOWNLOAD_DELAY': 0.5

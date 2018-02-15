@@ -68,5 +68,8 @@ class SpiderMixin(object):
 
     def get_query(self, keyword):
         '''Return search query.'''
-        query = [keyword, self.modifier, self.site, 'filetype:pdf']
+        site = None
+        if self.site:
+            site = 'site:{}'.format(self.site)
+        query = [keyword, self.modifier, site, 'filetype:pdf']
         return ' '.join([i for i in query if i])
