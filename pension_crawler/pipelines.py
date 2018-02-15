@@ -1,5 +1,9 @@
 '''pipelines.py'''
 
+import os
+
+from datetime import datetime
+
 from scrapy.exceptions import NotConfigured
 from scrapy.exporters import CsvItemExporter
 
@@ -16,20 +20,22 @@ class BaseCSVPipeline(object):
         )
 
     @staticmethod
-    def parse_settings(settings):
+    def get_settings(settings):
         '''Read spider settings.'''
-        output_file = settings.get('OUTPUT_FILE')
+        output_dir = settings.get('OUTPUT_DIR')
         fields_to_export = settings.get('FIELDS_TO_EXPORT')
-        if not output_file:
-            raise NotConfigured('Output file not set.')
+        if not output_dir:
+            raise NotConfigured('Output directory not set.')
         if not fields_to_export:
             raise NotConfigured('Fields to export not set.')
+        timestamp = datetime.now().strftime('%Y-%m-%d-%H-%M')
+        output_file = os.path.join(output_dir, '{}.csv'.format(timestamp))
         return output_file, fields_to_export
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         '''Pass output file and fields to export to constructor.'''
-        output_file, fields_to_export = BaseCSVPipeline.parse_settings(
+        output_file, fields_to_export = BaseCSVPipeline.get_settings(
             crawler.settings
         )
         return cls(output_file, fields_to_export, *args, **kwargs)
@@ -48,31 +54,34 @@ class BaseCSVPipeline(object):
         self.export_item(item)
         return item
 
+    def get_path(self, item):
+        '''Return path or none.'''
+        try:
+            return item['files'][0]['path']
+        except IndexError:
+            pass
+
     def export_item(self, item):
         '''Export row to CSV file.'''
         raise NotImplementedError
 
 
-class PDFDownloadPipeline(BaseCSVPipeline):
+class SearchExportDownloadEnabledPipeline(BaseCSVPipeline):
 
     '''Pipeline that exports items to CSV file when PDF download is enabled.'''
 
     def export_item(self, item, *args, **kwargs):
         '''Export item to csv file.'''
-        try:
-            path = item['files'][0]['path']
-        except IndexError:
-            path = None
         data = {
             'keyword': item['keyword'],
             'url': item['url'],
             'title': item['title'],
-            'path': path
+            'path': self.get_path(item)
         }
         self.exporter.export_item(data)
 
 
-class PDFNoDownloadPipeline(BaseCSVPipeline):
+class SearchExportDownloadDisabledPipeline(BaseCSVPipeline):
 
     '''Pipeline that exports items to CSV file when PDF download is disabled.'''
 
@@ -82,5 +91,20 @@ class PDFNoDownloadPipeline(BaseCSVPipeline):
             'keyword': item['keyword'],
             'url': item['url'],
             'title': item['title']
+        }
+        self.exporter.export_item(data)
+
+
+class SitesExportPipeline(BaseCSVPipeline):
+
+    '''Pipeline that exports items to CSV file from sites crawler.'''
+
+    def export_item(self, item, *args, **kwargs):
+        '''Export item to csv file.'''
+        data = {
+            'parent': item['keyword'],
+            'url': item['url'],
+            'text': item['title'],
+            'path': self.get_path(item)
         }
         self.exporter.export_item(data)
