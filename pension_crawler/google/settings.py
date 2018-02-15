@@ -2,24 +2,41 @@
 
 import os
 
-from pension_crawler.settings import DATA_DIR, NO_DOWNLOAD
-from pension_crawler.utils import no_download
+from pension_crawler.settings import DATA_DIR
 
+from pension_crawler.secrets import SECRETS
+from pension_crawler.utils import get_download_settings
+
+
+# set download to False to disable PDF downloading from search results
+
+DOWNLOAD = True
+
+item_pipelines, fields_to_export = get_download_settings(DOWNLOAD)
 
 SETTINGS = {
 
-    # scrapy settings
+    # Custom settings
 
-    'FILES_STORE': os.path.join(DATA_DIR, 'google', 'downloads'),
-
-    # custom settings
-
-    'OUTPUT_FILE': os.path.join(DATA_DIR, 'google', 'output.csv'),
-    'SEARCH_ENGINE_ID': os.getenv('GOOGLE_SEARCH_ENGINE_ID'),
-    'API_KEY': os.getenv('GOOGLE_API_KEY'),
+    'INPUT_FILE': os.path.join(DATA_DIR, 'input', 'google', 'default.csv'),
+    'OUTPUT_DIR': os.path.join(DATA_DIR, 'output', 'google'),
+    'KEYWORD_MODIFIER': 'actuarial valuation',
     'RESULT_DEPTH': 0,
-    'KEYWORD_MODIFIER': 'actuarial valuation'
-}
+    'START_DATE': None,  # Required format: YYYYMMDD
+    'END_DATE': None,  # Required format: YYYYMMDD
 
-if NO_DOWNLOAD:
-    SETTINGS = no_download(SETTINGS)
+    # Secret settings
+
+    'SEARCH_ENGINE_ID': SECRETS['GOOGLE_SEARCH_ENGINE_ID'],
+    'API_KEY': SECRETS['GOOGLE_API_KEY'],
+
+    # Scrapy settings
+
+    'ITEM_PIPELINES': item_pipelines,
+    'FIELDS_TO_EXPORT': fields_to_export,
+    'COOKIES_ENABLED': False,
+    'REDIRECT_ENABLED': False,
+    'RETRY_ENABLED': False,
+    'DOWNLOAD_TIMEOUT': 90,
+    'DOWNLOAD_DELAY': 0.5
+}
