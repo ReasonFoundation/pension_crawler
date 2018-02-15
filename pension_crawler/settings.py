@@ -11,7 +11,7 @@ HTTPCACHE_ENABLED = True
 # Custom settings
 
 DATA_DIR = os.path.join(os.getcwd(), 'data')
-BLACKLIST_FILE = os.path.join(DATA_DIR, 'blacklist.csv')
+BLACKLIST_FILE = os.path.join(DATA_DIR, 'blacklist.txt')
 
 
 # Scrapy settings
