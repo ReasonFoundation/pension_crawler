@@ -21,9 +21,10 @@ SETTINGS = {
     'INPUT_FILE': os.path.join(DATA_DIR, 'input', 'google', 'default.csv'),
     'OUTPUT_DIR': os.path.join(DATA_DIR, 'output', 'google'),
     'KEYWORD_MODIFIER': 'actuarial valuation',
-    'RESULT_DEPTH': 0,
+    'SITE': None,
     'START_DATE': None,  # Required format: YYYYMMDD
     'END_DATE': None,  # Required format: YYYYMMDD
+    'RESULT_DEPTH': 0,
 
     # Secret settings
 

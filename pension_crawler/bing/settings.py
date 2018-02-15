@@ -21,8 +21,9 @@ SETTINGS = {
     'INPUT_FILE': os.path.join(DATA_DIR, 'input', 'bing', 'default.txt'),
     'OUTPUT_DIR': os.path.join(DATA_DIR, 'output', 'bing'),
     'KEYWORD_MODIFIER': 'actuarial valuation',
-    'RESULT_DEPTH': 0,
+    'SITE': None,
     'FRESHNESS': None,  # Possible values: Day, Week, Month
+    'RESULT_DEPTH': 0,
 
     # Secret settings
 
@@ -33,7 +34,6 @@ SETTINGS = {
     'ITEM_PIPELINES': item_pipelines,
     'FIELDS_TO_EXPORT': fields_to_export,
     'COOKIES_ENABLED': False,
-    'REDIRECT_ENABLED': False,
     'RETRY_ENABLED': False,
     'DOWNLOAD_TIMEOUT': 90,
     'DOWNLOAD_DELAY': 0.5
