@@ -7,13 +7,13 @@ import tldextract
 from scrapy.exceptions import NotConfigured, IgnoreRequest
 
 
-class RequestBlacklistMiddleware(object):
+class BlacklistMiddleware(object):
 
     '''Block requests to url based on an input file.'''
 
     def __init__(self, blacklist, *args, **kwargs):
         '''Set start urls.'''
-        super(RequestBlacklistMiddleware, self).__init__(*args, **kwargs)
+        super(BlacklistMiddleware, self).__init__(*args, **kwargs)
         self.blacklist = blacklist
 
     @staticmethod
@@ -41,10 +41,10 @@ class RequestBlacklistMiddleware(object):
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         '''Pass user agent list to constructor.'''
-        blacklist_file = RequestBlacklistMiddleware.parse_settings(
+        blacklist_file = BlacklistMiddleware.parse_settings(
             crawler.settings
         )
-        blacklist = RequestBlacklistMiddleware.parse_blacklist(blacklist_file)
+        blacklist = BlacklistMiddleware.parse_blacklist(blacklist_file)
         return cls(blacklist, *args, **kwargs)
 
     def process_request(self, request, *args, **kwargs):
