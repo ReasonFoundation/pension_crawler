@@ -70,14 +70,14 @@ class SitesSpider(Spider):
         href = node.xpath('@href').extract_first()
         parsed_href = urlparse(href)
         if not (parsed_href.scheme or parsed_href.netloc):
-            parsed_href.scheme = parsed_url.scheme
-            parsed_href.netloc = parsed_url.netloc
-        return urlparse(parsed_href)
+            parsed_href = parsed_href._replace(scheme=parsed_url.scheme)
+            parsed_href = parsed_href._replace(netloc=parsed_url.netloc)
+        return urlunparse(parsed_href)
 
     def process_item(self, url, node):
         '''Load PDF item.'''
         href = self.get_href(url, node)
-        loader = PDFLoader()
+        loader = PDFLoader(selector=node)
         loader.add_value('url', url)
         loader.add_value('href', href)
         loader.add_xpath('text', 'text()')
