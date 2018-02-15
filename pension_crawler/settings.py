@@ -17,7 +17,7 @@ BLACKLIST_FILE = os.path.join(DATA_DIR, 'blacklist.csv')
 # Scrapy settings
 
 BOT_NAME = 'pension_crawler'
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'DEBUG'
 SPIDER_MODULES = [
     'pension_crawler.google', 'pension_crawler.bing', 'pension_crawler.sites'
 ]
