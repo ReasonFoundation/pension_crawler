@@ -1,7 +1,6 @@
 *.pyc
 setup.py
 twistd.pid
-secrets.py
 
 downloads/
 output/
