@@ -5,7 +5,7 @@ import os
 
 # Development settings
 
-HTTPCACHE_ENABLED = True
+# HTTPCACHE_ENABLED = True
 
 
 # Custom settings
