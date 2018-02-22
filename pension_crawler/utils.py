@@ -65,7 +65,7 @@ class BaseParser(object):
     def input_dir(self):
         '''Return input directory.'''
         return self._required(
-            'Input directory', self._from_settings('input_dir')
+            'Input directory', self._from_settings('INPUT_DIR')
         )
 
 
@@ -111,7 +111,7 @@ class SearchParser(BaseParser):
     @property
     def api_key(self):
         '''Return API key or raise.'''
-        return self._required('API key', self._from_settings('api_key'))
+        return self._required('API key', self._from_settings('API_KEY'))
 
     @property
     def depth(self):
@@ -152,7 +152,9 @@ class GoogleParser(SearchParser):
     @property
     def engine_id(self):
         '''Return API key.'''
-        return self._required('Engine ID', self._from_settings('engine_id'))
+        return self._required(
+            'Engine ID', self._from_settings('SEARCH_ENGINE_ID')
+        )
 
     @property
     def start_date(self):
