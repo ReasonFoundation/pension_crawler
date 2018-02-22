@@ -22,10 +22,6 @@ class BaseParser(object):
         '''Set args, settings and input directory.'''
         self.args = args
         self.settings = settings
-        input_dir = self._from_settings('input_dir')
-        if not input_dir:
-            raise NotConfigured('No input directory specified.')
-        self.input_dir = input_dir
 
     # private methods
 
@@ -52,32 +48,30 @@ class BaseParser(object):
         try:
             return json.loads(text)
         except ValueError:
-            print('JSON conversion error.')
-            return []
+            raise NotConfigured('Invalid JSON: {}.'.format(text))
 
     def _from_file(self, path):
         '''Return values from file input.'''
         with open(path, 'r') as file_:
             return [i.strip() for i in file_.readlines()]
 
+    def _required(self, human, value):
+        '''Raise not configured if value is null.'''
+        if not value:
+            raise NotConfigured('{} not found.'.format(human))
+        return value
+
+    @property
+    def input_dir(self):
+        '''Return input directory.'''
+        return self._required(
+            'Input directory', self._from_settings('input_dir')
+        )
+
 
 class SearchParser(BaseParser):
 
     '''Common arg parsing functionality for search spiders.'''
-
-    # constructor
-
-    def __init__(self, *args, **kwargs):
-        '''Set modifier and filetype.'''
-        super(SearchParser, self).__init__(*args, **kwargs)
-        modifier = self._from_args_or_settings('modifier')
-        filetype = self._from_args_or_settings('filetype')
-        if not modifier:
-            raise NotConfigured('No query modifier specified.')
-        if not filetype:
-            raise NotConfigured('No query filetype specified.')
-        self.modifier = modifier
-        self.filetype = filetype
 
     # private methods
 
@@ -92,17 +86,9 @@ class SearchParser(BaseParser):
 
     def _site_query_list(self, lst):
         '''Return site query list.'''
-        return [self._query(self.modifier, i) for i in lst]
+        return [self._query(self.modifier, 'site:{}'.format(i)) for i in lst]
 
     # properties
-
-    @property
-    def api_key(self):
-        '''Return API key or raise.'''
-        value = self._from_settings('api_key')
-        if not value:
-            raise NotConfigured('API key missing.')
-        return value
 
     @property
     def input_list(self):
@@ -118,13 +104,33 @@ class SearchParser(BaseParser):
             return self._keyword_query_list(self._from_file(keyword_file))
         site_file = self._from_args_or_settings('site_file')
         if site_file:
-            return self._site_query_list(self._from_file(site_file))
-        raise NotConfigured('Input list not configured.')
+            return self._required(
+                'Input list', self._site_query_list(self._from_file(site_file))
+            )
+
+    @property
+    def api_key(self):
+        '''Return API key or raise.'''
+        return self._required('API key', self._from_settings('api_key'))
 
     @property
     def depth(self):
         '''Return depth.'''
-        return self._from_args_or_settings('depth')
+        return self._required('Depth', self._from_args_or_settings('depth'))
+
+    @property
+    def modifier(self):
+        '''Return modifier.'''
+        return self._required(
+            'Modifier', self._from_args_or_settings('modifier')
+        )
+
+    @property
+    def filetype(self):
+        '''Return filetype.'''
+        return self._required(
+            'Filetype', self._from_args_or_settings('filetype')
+        )
 
 
 class GoogleParser(SearchParser):
@@ -133,33 +139,30 @@ class GoogleParser(SearchParser):
 
     # private methods
 
-    def _validate(self, date):
+    def _validate_date(self, text):
         '''Check if date is in correct format.'''
         try:
-            datetime.strptime(date, '%Y%m%d')
+            datetime.strptime(text, '%Y%m%d')
         except ValueError:
-            raise NotConfigured('Invalid date: {}.'.format(date))
-        return date
+            raise NotConfigured('Invalid date: {}.'.format(text))
+        return text
 
     # properties
 
     @property
     def engine_id(self):
         '''Return API key.'''
-        value = self._from_settings('engine_id')
-        if not value:
-            raise NotConfigured('Search engine id missing.')
-        return value
+        return self._required('Engine ID', self._from_settings('engine_id'))
 
     @property
     def start_date(self):
         '''Return start date'''
-        return self._validate(self._from_args_or_settings('start_date'))
+        return self._validate_date(self._from_args_or_settings('start_date'))
 
     @property
     def end_date(self):
         '''Return end date'''
-        return self._validate(self._from_args_or_settings('end_date'))
+        return self._validate_date(self._from_args_or_settings('end_date'))
 
 
 class BingParser(SearchParser):
@@ -168,18 +171,20 @@ class BingParser(SearchParser):
 
     # private methods
 
-    def _validate(self, freshness):
+    def _validate_freshness(self, text):
         '''Check if freshness is in correct format.'''
-        if freshness not in ['Day', 'Week', 'Month']:
-            raise NotConfigured('Invalid freshness: {}'.format(freshness))
-        return freshness
+        if text not in ['Day', 'Week', 'Month']:
+            raise NotConfigured('Invalid freshness: {}'.format(text))
+        return text
 
     # properties
 
     @property
     def freshness(self):
         '''Return freshness.'''
-        return self._validate(self._from_args_or_settings('freshness'))
+        return self._validate_freshness(
+            self._from_args_or_settings('freshness')
+        )
 
 
 class SitesParser(BaseParser):
@@ -196,8 +201,7 @@ class SitesParser(BaseParser):
             return self._from_json(site_list)
         site_file = self._from_args_or_settings('site_file')
         if site_file:
-            return self._from_file(site_file)
-        raise NotConfigured('Input list not configured.')
+            return self._required('Input list', self._from_file(site_file))
 
 
 class Settings(object):
