@@ -3,90 +3,71 @@
 import json
 
 from datetime import datetime
-from urllib.parse import quote_plus, urlencode
+from urllib.parse import urlencode
 
 from scrapy import Spider, Request
-from scrapy.exceptions import NotConfigured
 
 from pension_crawler.items import ResultLoader
-from pension_crawler.utils import SpiderMixin
+from pension_crawler.utils import BingParser
 
 from .settings import SETTINGS
 
 
-class BingSpider(Spider, SpiderMixin):
+class BingSpider(Spider):
 
     '''Parse Bing Search API results.'''
+
+    # class variables
 
     name = 'bing'
     custom_settings = SETTINGS
 
-    def __init__(self, crawler, keywords, modifier, depth, site, freshness,
-                 api_key, *args, **kwargs):
-        '''Set queries, modifier, depth, freshness, site and api key.'''
+    # constructor
+
+    def __init__(self, crawler, input_list, depth, api_key, freshness, *args,
+                 **kwargs):
+        '''Set queries, depth, freshness, and api key.'''
         super(BingSpider, self).__init__(*args, **kwargs)
         self.crawler = crawler
-        self.keywords = keywords
-        self.modifier = modifier
+        self.input_list = input_list
         self.depth = depth
-        self.site = site
-        self.freshness = freshness
         self.api_key = api_key
+        self.freshness = freshness
 
-    @staticmethod
-    def validate_freshness(freshness):
-        '''Validate freshness in correct format.'''
-        return freshness in ['Day', 'Week', 'Month']
-
-    @staticmethod
-    def parse_spider_settings(settings):
-        '''Parse custom spider settings.'''
-        freshness = settings.get('FRESHNESS')
-        api_key = settings.get('API_KEY')
-        if freshness and not BingSpider.validate_freshness(freshness):
-            raise NotConfigured('Invalid freshness parameter.')
-        if not api_key:
-            raise NotConfigured('Google API key not set.')
-        return freshness, api_key
+    # class methods
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         '''Pass settings to constructor.'''
-        keywords, depth, modifier, site = BingSpider.parse_common_settings(
-            kwargs, crawler.settings
-        )
-        freshness, api_key = BingSpider.parse_spider_settings(crawler.settings)
+        parser = BingParser(kwargs, crawler.settings)
         return cls(
             crawler,
-            keywords,
-            modifier,
-            depth,
-            site,
-            freshness,
-            api_key,
+            parser.input_list,
+            parser.depth,
+            parser.api_key,
+            parser.freshness,
             *args,
             **kwargs
         )
+
+    # properties
 
     @property
     def headers(self):
         '''Return request headers.'''
         return {'Ocp-Apim-Subscription-Key' : self.api_key}
 
-    def get_url(self, query):
+    # private methods
+
+    def _get_url(self, query):
         '''Return request url.'''
-        data = {'q': self.get_query(query)}
+        data = {'q': query}
         if self.freshness:
             data['freshness'] = self.freshness
         base = 'https://api.cognitive.microsoft.com/bing/v7.0/search?{}'
         return base.format(urlencode(data))
 
-    def start_requests(self):
-        '''Dispatch requests per keyword.'''
-        for keyword in self.keywords:
-            yield Request(self.get_url(keyword), headers=self.headers)
-
-    def process_item(self, node):
+    def _load_item(self, node):
         '''Load single result item.'''
         loader = ResultLoader()
         loader.add_value('url', node['url'])
@@ -95,11 +76,18 @@ class BingSpider(Spider, SpiderMixin):
         loader.add_value('timestamp', datetime.now().isoformat())
         return loader.load_item()
 
+    # overriden class methods
+
+    def start_requests(self):
+        '''Dispatch requests per keyword.'''
+        for query in self.input_list:
+            yield Request(self._get_url(query), headers=self.headers)
+
     def parse(self, response):
         '''Parse search results.'''
         data = json.loads(response.body_as_unicode())
         for node in data.get('webPages', {}).get('value', []):
-            item = self.process_item(node)
+            item = self._load_item(node)
             item['keyword'] = data['queryContext']['originalQuery']
             item['total'] = data['webPages']['totalEstimatedMatches']
             item['file_urls'] = [item['url']]
