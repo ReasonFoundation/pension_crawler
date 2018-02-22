@@ -88,6 +88,12 @@ class SearchParser(BaseParser):
         '''Return site query list.'''
         return [self._query(self.modifier, 'site:{}'.format(i)) for i in lst]
 
+    def _validate_depth(self, value):
+        '''Check if depth is between 0 and 9.'''
+        if 0 <= value <= 9:
+            return value
+        raise NotConfigured('Invalid depth: {}.'.format(value))
+
     # properties
 
     @property
@@ -116,7 +122,9 @@ class SearchParser(BaseParser):
     @property
     def depth(self):
         '''Return depth.'''
-        return self._required('Depth', self._from_args_or_settings('depth'))
+        return self._validate_depth(
+            self._required('Depth', self._from_args_or_settings('depth'))
+        )
 
     @property
     def modifier(self):
