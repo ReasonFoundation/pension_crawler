@@ -50,8 +50,9 @@ class BaseParser(object):
         except ValueError:
             raise NotConfigured('Invalid JSON: {}.'.format(text))
 
-    def _from_file(self, path):
+    def _from_file(self, fname):
         '''Return values from file input.'''
+        path = os.path.join(self.input_dir, fname)
         with open(path, 'r') as file_:
             return [i.strip() for i in file_.readlines()]
 
@@ -105,10 +106,16 @@ class SearchParser(BaseParser):
         site_list = self._from_args('site_list')
         if site_list:
             return self._site_query_list(self._from_json(site_list))
-        keyword_file = self._from_args_or_settings('keyword_file')
+        keyword_file = self._from_args('keyword_file')
         if keyword_file:
             return self._keyword_query_list(self._from_file(keyword_file))
-        site_file = self._from_args_or_settings('site_file')
+        site_file = self._from_args('site_file')
+        if site_file:
+            return self._site_query_list(self._from_file(site_file))
+        keyword_file = self._from_settings('keyword_file')
+        if keyword_file:
+            return self._keyword_query_list(self._from_file(keyword_file))
+        site_file = self._from_settings('site_file')
         if site_file:
             return self._required(
                 'Input list', self._site_query_list(self._from_file(site_file))
@@ -209,7 +216,10 @@ class SitesParser(BaseParser):
         site_list = self._from_args('site_list')
         if site_list:
             return self._from_json(site_list)
-        site_file = self._from_args_or_settings('site_file')
+        site_file = self._from_args('site_file')
+        if site_file:
+            return self._from_file(site_file)
+        site_file = self._from_settings('site_file')
         if site_file:
             return self._required('Input list', self._from_file(site_file))
 
