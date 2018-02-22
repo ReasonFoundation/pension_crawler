@@ -22,6 +22,7 @@ SETTINGS = {
     'start_date': None,  # Required format: YYYYMMDD
     'end_date': None,  # Required format: YYYYMMDD
     'depth': 0,
+    'filetype': 'pdf',
 
     'INPUT_DIR': os.path.join(DATA_DIR, 'input', 'google'),
     'OUTPUT_DIR': os.path.join(DATA_DIR, 'output', 'google'),

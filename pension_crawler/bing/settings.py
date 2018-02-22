@@ -22,6 +22,7 @@ SETTINGS = {
     'site': None,
     'freshness': None,  # Possible values: Day, Week, Month
     'depth': 0,
+    'filetype': 'pdf',
 
     'INPUT_DIR': os.path.join(DATA_DIR, 'input', 'bing'),
     'OUTPUT_DIR': os.path.join(DATA_DIR, 'output', 'bing'),
