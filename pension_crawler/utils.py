@@ -94,7 +94,7 @@ class SearchParser(BaseParser):
     @property
     def api_key(self):
         '''Return API key or raise.'''
-        value = self._from_args_or_settings('api_key')
+        value = self._from_settings('api_key')
         if not value:
             raise NotConfigured('API key missing.')
         return value
@@ -141,7 +141,7 @@ class GoogleParser(SearchParser):
     @property
     def engine_id(self):
         '''Return API key.'''
-        value = self._from_args_or_settings('engine_id')
+        value = self._from_settings('engine_id')
         if not value:
             raise NotConfigured('Search engine id missing.')
         return value
