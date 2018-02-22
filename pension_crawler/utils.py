@@ -189,7 +189,7 @@ class SitesParser(BaseParser):
         site_list = self._from_args('site_list')
         if site_list:
             return self._from_json(site_list)
-        site_file = self._from_settings('site_file')
+        site_file = self._from_args_or_settings('site_file')
         if site_file:
             return self._from_file(site_file)
         raise NotConfigured('Input list not configured.')
