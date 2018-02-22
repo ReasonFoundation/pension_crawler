@@ -6,10 +6,10 @@ import logging
 from datetime import datetime
 from urllib.parse import urlparse, urlunparse
 
-from scrapy import Spider
-from scrapy.exceptions import NotConfigured
+from scrapy import Spider, Request
 
 from pension_crawler.items import PDFLoader
+from pension_crawler.utils import SitesParser
 
 from .settings import SETTINGS
 
@@ -21,50 +21,30 @@ class SitesSpider(Spider):
 
     '''Extract pdf files from a list of sites.'''
 
+    # class variables
+
     name = 'sites'
     custom_settings = SETTINGS
 
-    def __init__(self, crawler, start_urls, *args, **kwargs):
-        '''Set crawler and url list.'''
+    # constructor
+
+    def __init__(self, crawler, input_list, *args, **kwargs):
+        '''Set crawler and input list.'''
         super(SitesSpider, self).__init__(*args, **kwargs)
         self.crawler = crawler
-        self.start_urls = start_urls
+        self.input_list = input_list
 
-    @staticmethod
-    def get_list_from_file(settings):
-        '''Return values from file input.'''
-        input_file = settings.get('INPUT_FILE')
-        with open(input_file, 'r') as file_:
-            return [i.strip() for i in file_.readlines()]
-
-    @staticmethod
-    def get_list_from_args(args):
-        '''Return values from spider arguments.'''
-        start_urls = args.pop('start_urls', None)
-        if not start_urls:
-            return
-        try:
-            return json.loads(start_urls)
-        except ValueError:
-            raise NotConfigured('Start url list from args is invalid.')
-
-    @staticmethod
-    def get_start_urls(args, settings):
-        start_urls = SitesSpider.get_list_from_args(args)
-        if not start_urls:
-            logger.info('Start url list from args is empty.')
-            start_urls = SitesSpider.get_list_from_file(settings)
-        if not start_urls:
-            raise NotConfigured('Start url list from file is empty.')
-        return start_urls
+    # class methods
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         '''Pass crawler and start urls to constructor.'''
-        start_urls = SitesSpider.get_start_urls(kwargs, crawler.settings)
-        return cls(crawler, start_urls,  *args, **kwargs)
+        parser = SitesParser(kwargs, crawler.settings)
+        return cls(crawler, parser.input_list,  *args, **kwargs)
 
-    def get_href(self, url, node):
+    # private methods
+
+    def _get_href(self, url, node):
         '''Get href full location.'''
         parsed_url = urlparse(url)
         href = node.xpath('@href').extract_first()
@@ -74,9 +54,9 @@ class SitesSpider(Spider):
             parsed_href = parsed_href._replace(netloc=parsed_url.netloc)
         return urlunparse(parsed_href)
 
-    def process_item(self, url, node):
+    def _load_item(self, url, node):
         '''Load PDF item.'''
-        href = self.get_href(url, node)
+        href = self._get_href(url, node)
         loader = PDFLoader(selector=node)
         loader.add_value('url', url)
         loader.add_value('href', href)
@@ -85,7 +65,14 @@ class SitesSpider(Spider):
         loader.add_value('timestamp', datetime.now().isoformat())
         return loader.load_item()
 
+    # class method overrides
+
+    def start_requests(self):
+        '''Dispatch requests per site url.'''
+        for url in self.input_list:
+            yield Request(url)
+
     def parse(self, response):
         '''Parse search results.'''
         for node in response.xpath('//a[contains(@href,".pdf")]'):
-            yield self.process_item(response.url, node)
+            yield self._load_item(response.url, node)
