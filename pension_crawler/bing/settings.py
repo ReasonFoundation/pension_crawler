@@ -4,13 +4,13 @@ import os
 
 from pension_crawler.secrets import SECRETS
 from pension_crawler.settings import DATA_DIR
-from pension_crawler.utils import Settings
+from pension_crawler.utils import CustomSettings
 
 
 # set download to False to disable PDF downloading from search results
 
 DOWNLOAD = True
-settings = Settings(DOWNLOAD)
+custom_settings = CustomSettings(DOWNLOAD)
 
 SETTINGS = {
 
@@ -21,7 +21,7 @@ SETTINGS = {
     'modifier': 'actuarial valuation',
     'site': None,
     'freshness': None,  # Possible values: Day, Week, Month
-    'depth': 0,
+    'depth': 1,
     'filetype': 'pdf',
 
     'INPUT_DIR': os.path.join(DATA_DIR, 'input', 'bing'),
@@ -33,8 +33,8 @@ SETTINGS = {
 
     # Scrapy settings
 
-    'ITEM_PIPELINES': settings.item_pipelines,
-    'FIELDS_TO_EXPORT': settings.fields_to_export,
+    'ITEM_PIPELINES': custom_settings.item_pipelines,
+    'FIELDS_TO_EXPORT': custom_settings.fields_to_export,
     'COOKIES_ENABLED': False,
     'RETRY_ENABLED': False,
     'DOWNLOAD_TIMEOUT': 90,

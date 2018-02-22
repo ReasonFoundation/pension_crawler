@@ -95,7 +95,7 @@ class BingSpider(Spider):
 
         # go to next results page
 
-        if self.depth:
+        if self.depth - 1:
             start = data['rankingResponse']['mainline']['items'][-1]
             yield Request('{}&offset={}'.format(response.request.url, start))
             self.depth -= 1

@@ -214,7 +214,7 @@ class SitesParser(BaseParser):
             return self._required('Input list', self._from_file(site_file))
 
 
-class Settings(object):
+class CustomSettings(object):
 
     '''Return specific settings object if PDF download is enabled or not.'''
 

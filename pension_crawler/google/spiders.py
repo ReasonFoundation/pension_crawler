@@ -99,7 +99,7 @@ class GoogleSpider(Spider):
 
         # go to next results page
 
-        if self.depth:
+        if self.depth - 1:
             start = data['queries']['nextPage'][0]['startIndex']
             yield Request('{}&start={}'.format(response.request.url, start))
             self.depth -= 1
