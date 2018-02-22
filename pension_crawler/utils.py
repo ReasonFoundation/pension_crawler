@@ -225,5 +225,5 @@ class Settings(object):
         '''Return fields to export'''
         fields = ['keyword', 'url', 'title', 'path']
         if not self.download:
-            fields.pop('path')
+            fields.pop()
         return fields
