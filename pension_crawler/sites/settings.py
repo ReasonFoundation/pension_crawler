@@ -9,7 +9,9 @@ SETTINGS = {
 
     # Custom settings
 
-    'INPUT_FILE': os.path.join(DATA_DIR, 'input', 'sites', 'default.txt'),
+    'site_file': 'sites.txt',
+
+    'INPUT_DIR': os.path.join(DATA_DIR, 'input', 'sites'),
     'OUTPUT_DIR': os.path.join(DATA_DIR, 'output', 'sites'),
 
     # Scrapy settings
