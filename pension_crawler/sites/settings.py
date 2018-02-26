@@ -7,7 +7,8 @@ from pension_crawler.utils import CustomSettings
 
 
 fields = [
-    'url', 'href', 'text', 'state', 'system', 'report_type', 'year', 'path'
+    'url', 'href', 'text', 'state', 'system', 'report_type', 'year',
+    'page_count', 'path'
 ]
 custom_settings = CustomSettings(DOWNLOAD_ENABLED, fields)
 
