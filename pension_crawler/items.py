@@ -5,7 +5,20 @@ from scrapy.loader import ItemLoader
 from scrapy.loader.processors import TakeFirst, Identity
 
 
-class ResultItem(Item):
+class BaseItem(Item):
+
+    '''Base item.'''
+
+    state = Field()
+    system = Field()
+    report_type = Field()
+    year = Field()
+    file_urls = Field()
+    files = Field()
+    timestamp = Field()
+
+
+class ResultItem(BaseItem):
 
     '''Result item.'''
 
@@ -14,21 +27,15 @@ class ResultItem(Item):
     url = Field()
     title = Field()
     snippet = Field()
-    file_urls = Field()
-    files = Field()
-    timestamp = Field()
 
 
-class PDFItem(Item):
+class PDFItem(BaseItem):
 
     '''Pdf item.'''
 
     url = Field()
     href = Field()
     text = Field()
-    file_urls = Field()
-    files = Field()
-    timestamp = Field()
 
 
 class BaseLoader(ItemLoader):
