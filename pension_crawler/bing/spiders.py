@@ -1,19 +1,21 @@
 '''spiders.py'''
 
 import json
+import os
 
 from datetime import datetime
 from urllib.parse import urlencode
 
-from scrapy import Spider, Request
+from scrapy import Request
+from scrapy.exceptions import NotConfigured
 
 from pension_crawler.items import ResultLoader
-from pension_crawler.utils import BingParser
+from pension_crawler.utils import BaseSpider
 
 from .settings import SETTINGS
 
 
-class BingSpider(Spider):
+class BingSpider(BaseSpider):
 
     '''Parse Bing Search API results.'''
 
@@ -24,31 +26,27 @@ class BingSpider(Spider):
 
     # constructor
 
-    def __init__(self, crawler, input_list, depth, api_key, freshness, *args,
-                 **kwargs):
-        '''Set queries, depth, freshness, and api key.'''
+    def __init__(self, crawler, data, depth, api_key, *args, **kwargs):
+        '''Set data, depth, and api key.'''
         super(BingSpider, self).__init__(*args, **kwargs)
         self.crawler = crawler
-        self.input_list = input_list
+        self.data = data
         self.depth = depth
         self.api_key = api_key
-        self.freshness = freshness
 
     # class methods
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         '''Pass settings to constructor.'''
-        parser = BingParser(kwargs, crawler.settings)
-        return cls(
-            crawler,
-            parser.input_list,
-            parser.depth,
-            parser.api_key,
-            parser.freshness,
-            *args,
-            **kwargs
-        )
+        data = BingSpider._data(crawler.settings)
+        depth = crawler.settings.get('depth')
+        api_key = crawler.settings.get('api_key')
+        if not depth:
+            raise NotConfigured('Crawl depth not specified.')
+        if not api_key:
+            raise NotConfigured('API key not specified.')
+        return cls(crawler, data, depth, api_key, *args, **kwargs)
 
     # properties
 
@@ -59,15 +57,22 @@ class BingSpider(Spider):
 
     # private methods
 
-    def _get_url(self, query):
+    def _freshness(self, text):
+        '''Check if freshness in allowed values.'''
+        if not text in ['Day', 'Week', 'Month']:
+            raise NotConfigured('Invalid freshness: {}'.format(text))
+        return text
+
+    def _url(self, row):
         '''Return request url.'''
-        data = {'q': query}
-        if self.freshness:
-            data['freshness'] = self.freshness
+        data = {'q': self._query(row)}
+        freshness = row.get('freshness')
+        if freshness:
+            data['freshness'] = self._freshness(freshness)
         base = 'https://api.cognitive.microsoft.com/bing/v7.0/search?{}'
         return base.format(urlencode(data))
 
-    def _load_item(self, node):
+    def _process_item(self, node):
         '''Load single result item.'''
         loader = ResultLoader()
         loader.add_value('url', node['url'])
@@ -80,14 +85,17 @@ class BingSpider(Spider):
 
     def start_requests(self):
         '''Dispatch requests per keyword.'''
-        for query in self.input_list:
-            yield Request(self._get_url(query), headers=self.headers)
+        for row in self.data:
+            yield Request(
+                self._url(row), meta=self._meta(row), headers=self.headers
+            )
 
     def parse(self, response):
         '''Parse search results.'''
         data = json.loads(response.body_as_unicode())
         for node in data.get('webPages', {}).get('value', []):
-            item = self._load_item(node)
+            item = self._process_item(node)
+            item = self._process_meta(item, response.meta)
             item['keyword'] = data['queryContext']['originalQuery']
             item['total'] = data['webPages']['totalEstimatedMatches']
             item['file_urls'] = [item['url']]
@@ -97,5 +105,6 @@ class BingSpider(Spider):
 
         if self.depth - 1:
             start = data['rankingResponse']['mainline']['items'][-1]
-            yield Request('{}&offset={}'.format(response.request.url, start))
+            url = '{}&offset={}'.format(response.request.url, start)
+            yield Request(url, meta=response.meta, headers=self.headers)
             self.depth -= 1
