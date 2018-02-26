@@ -36,6 +36,7 @@ function do_wait() {
 # Create output directories
 
 function configure_directories() {
+  mkdir ../data/temp
   mkdir ../data/output
   DIRECTORIES=(bing google sites)
   for dir in ${DIRECTORIES[@]}
@@ -50,6 +51,20 @@ function configure_directories() {
 
 function configure_system() {
   PACKAGES=(
+    libpulse-dev
+    antiword
+    unrtf
+    poppler-utils
+    pstotext
+    tesseract-ocr
+    flac
+    ffmpeg
+    lame
+    libmad0
+    libsox-fmt-mp3
+    sox
+    libjpeg-dev
+    swig
     python3
     python3-dev
     python3-pip
