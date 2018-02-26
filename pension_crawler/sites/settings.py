@@ -17,7 +17,7 @@ SETTINGS = {
     # Scrapy settings
 
     'ITEM_PIPELINES': custom_settings.item_pipelines,
-    'FIELDS_TO_EXPORT': custom_settings.fields_to_export
+    'FIELDS_TO_EXPORT': custom_settings.fields_to_export,
 
     # Custom settings
 
