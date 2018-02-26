@@ -78,12 +78,11 @@ class CustomSettings(object):
         '''Return item pipelines.'''
         if not self.download_enabled:
             return {
-                'pension_crawler.pipelines.SearchExportDownloadDisabledPipelin'
-                    'e': 300
+                'pension_crawler.pipelines.CSVPipeline': 300,
             }
         return {
             'scrapy.pipelines.files.FilesPipeline': 1,
-            'pension_crawler.pipelines.SearchExportDownloadEnabledPipeline': 300
+            'pension_crawler.pipelines.CSVPipeline': 300
         }
 
     @property
