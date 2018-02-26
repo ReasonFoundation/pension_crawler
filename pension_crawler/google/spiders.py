@@ -5,15 +5,16 @@ import json
 from datetime import datetime
 from urllib.parse import urlencode
 
-from scrapy import Spider, Request
+from scrapy import Request
+from scrapy.exceptions import NotConfigured
 
 from pension_crawler.items import ResultLoader
-from pension_crawler.utils import GoogleParser
+from pension_crawler.utils import BaseSpider
 
 from .settings import SETTINGS
 
 
-class GoogleSpider(Spider):
+class GoogleSpider(BaseSpider):
 
     '''Parse Google Search API results.'''
 
@@ -24,16 +25,14 @@ class GoogleSpider(Spider):
 
     # constructor
 
-    def __init__(self, crawler, input_list, depth, api_key, start_date,
-                 end_date, engine_id, *args, **kwargs):
-        '''Set queries, depth, search engine id and api key.'''
+    def __init__(self, crawler, data, depth, api_key, engine_id, *args,
+                 **kwargs):
+        '''Set data, depth, and api key.'''
         super(GoogleSpider, self).__init__(*args, **kwargs)
         self.crawler = crawler
-        self.input_list = input_list
+        self.data = data
         self.depth = depth
         self.api_key = api_key
-        self.start_date = start_date
-        self.end_date = end_date
         self.engine_id = engine_id
 
     # class methods
@@ -41,22 +40,42 @@ class GoogleSpider(Spider):
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         '''Pass settings to constructor.'''
-        parser = GoogleParser(kwargs, crawler.settings)
-        return cls(
-            crawler,
-            parser.input_list,
-            parser.depth,
-            parser.api_key,
-            parser.start_date,
-            parser.end_date,
-            parser.engine_id,
-            *args,
-            **kwargs
-        )
+        data = GoogleSpider._data(crawler.settings)
+        depth = crawler.settings.get('depth')
+        api_key = crawler.settings.get('api_key')
+        engine_id = crawler.settings.get('ENGINE_ID')
+        if not depth:
+            raise NotConfigured('Crawl depth not specified.')
+        if not api_key:
+            raise NotConfigured('API key not specified.')
+        if not engine_id:
+            raise NotConfigured('Input directory not specified.')
+        return cls(crawler, data, depth, api_key, engine_id, *args, **kwargs)
 
     # private methods
 
-    def _load_item(self, node):
+    def _date(self, text):
+        try:
+            datetime.strptime(text, '%Y%m%d')
+            return text
+        except ValueError:
+            raise NotConfigured('Invalid date: {}'.format(text))
+
+    def _url(self, row):
+        '''Return request url.'''
+        data = {
+            'cx': self.engine_id, 'key': self.api_key, 'q': self._query(row)
+        }
+        start_date = row.get('start_date')
+        end_date = row.get('end_date')
+        if start_date and end_date:
+            data['sort'] = 'date:r:{}:{}'.format(
+                self._date(start_date), self._date(end_date)
+            )
+        base = 'https://www.googleapis.com/customsearch/v1?{}'
+        return base.format(urlencode(data))
+
+    def _process_item(self, node):
         '''Load single result item.'''
         loader = ResultLoader()
         loader.add_value('url', node['link'])
@@ -65,33 +84,19 @@ class GoogleSpider(Spider):
         loader.add_value('timestamp', datetime.now().isoformat())
         return loader.load_item()
 
-    @property
-    def sort(self):
-        '''Return search sort by date parameter.'''
-        if self.start_date and self.end_date:
-            return 'date:r:{}:{}'.format(self.start_date, self.end_date)
-
-    def _get_url(self, query):
-        '''Return request url.'''
-        data = {'cx': self.engine_id, 'key': self.api_key, 'q': query}
-        sort = self.sort
-        if sort:
-            data['sort'] = sort
-        base = 'https://www.googleapis.com/customsearch/v1?{}'
-        return base.format(urlencode(data))
-
     # class method overrides
 
     def start_requests(self):
         '''Dispatch requests per keyword.'''
-        for query in self.input_list:
-            yield Request(query)
+        for row in self.data:
+            yield Request(self._url(row), meta=self._meta(row))
 
     def parse(self, response):
         '''Parse search results.'''
         data = json.loads(response.body_as_unicode())
         for node in data.get('items', []):
-            item = self._load_item(node)
+            item = self._process_item(node)
+            item = self._process_meta(item, response.meta)
             item['keyword'] = data['queries']['request'][0]['searchTerms']
             item['total'] = data['searchInformation']['totalResults']
             item['file_urls'] = [item['url']]
@@ -101,5 +106,6 @@ class GoogleSpider(Spider):
 
         if self.depth - 1:
             start = data['queries']['nextPage'][0]['startIndex']
-            yield Request('{}&start={}'.format(response.request.url, start))
+            url = '{}&start={}'.format(response.request.url, start)
+            yield Request(url, meta=response.meta)
             self.depth -= 1
