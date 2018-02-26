@@ -1,7 +1,5 @@
 '''middlewares.py'''
 
-import logging
-
 import tldextract
 
 from scrapy.exceptions import NotConfigured, IgnoreRequest
@@ -11,45 +9,38 @@ class BlacklistMiddleware(object):
 
     '''Block requests to url based on an input file.'''
 
-    def __init__(self, blacklist, *args, **kwargs):
-        '''Set start urls.'''
+    # constructor
+
+    def __init__(self, data, *args, **kwargs):
+        '''Set data.'''
         super(BlacklistMiddleware, self).__init__(*args, **kwargs)
-        self.blacklist = blacklist
+        self.data = data
+
+    # static methods
 
     @staticmethod
-    def parse_settings(settings):
-        '''Read blacklist file from settings.'''
-        blacklist_file = settings.get('BLACKLIST_FILE')
-        if not blacklist_file:
-            raise NotConfigured('Blacklist file not set.')
-        return blacklist_file
-
-    @staticmethod
-    def parse_blacklist(path):
+    def _data(path):
         '''Read blacklisted urls from file.'''
-        blacklist = []
         try:
             with open(path, 'r') as file_:
-                for line in file_.readlines():
-                    blacklist.append(line.strip())
+                return [l.strip() for l in file_.readlines()]
         except IOError:
-            raise NotConfigured('Could not read blacklist file.')
-        if not blacklist:
-            logging.warn('Blacklisted url list is empty')
-        return blacklist
+            raise NotConfigured('Error reading blacklist data.')
+
+    # class methods
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
-        '''Pass user agent list to constructor.'''
-        blacklist_file = BlacklistMiddleware.parse_settings(
-            crawler.settings
-        )
-        blacklist = BlacklistMiddleware.parse_blacklist(blacklist_file)
-        return cls(blacklist, *args, **kwargs)
+        '''Pass data to constructor.'''
+        file_ = crawler.settings.get('BLACKLIST_FILE')
+        if not file_:
+            raise NotConfigured('Blacklist file not specified.')
+        return cls(BlacklistMiddleware._data(file_), *args, **kwargs)
+
+    # overriden class methods
 
     def process_request(self, request, *args, **kwargs):
         '''Ignore requests to domains specified in blacklist file.'''
         parsed = tldextract.extract(request.url)
-        domain = '.'.join((parsed.domain, parsed.suffix))
-        if domain in self.blacklist:
+        if '.'.join((parsed.domain, parsed.suffix)) in self.data:
             raise IgnoreRequest()
