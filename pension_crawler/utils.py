@@ -30,15 +30,6 @@ class BaseSpider(Spider):
 
     # private methods
 
-    def _query(self, row):
-        '''Return search query.'''
-        site = row.get('site')
-        if site:
-            extract = tldextract.extract(site)
-            site = 'site:{}.{}'.format(extract.domain, extract.suffix)
-        query = [row.get('keyword'), row.get('modifier'), site, 'filetype:pdf']
-        return ' '.join([i for i in query if i])
-
     def _meta(self, row):
         '''Return request meta dictionary.'''
         return {
@@ -53,6 +44,20 @@ class BaseSpider(Spider):
         item['system'] = meta['system']
         item['report_type'] = meta['report_type']
         return item
+
+
+class SearchSpider(BaseSpider):
+
+    # private methods
+
+    def _query(self, row):
+        '''Return search query.'''
+        site = row.get('site')
+        if site:
+            extract = tldextract.extract(site)
+            site = 'site:{}.{}'.format(extract.domain, extract.suffix)
+        query = [row.get('keyword'), row.get('modifier'), site, 'filetype:pdf']
+        return ' '.join([i for i in query if i])
 
 
 class CustomSettings(object):

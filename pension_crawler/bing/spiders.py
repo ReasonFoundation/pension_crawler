@@ -10,12 +10,12 @@ from scrapy import Request
 from scrapy.exceptions import NotConfigured
 
 from pension_crawler.items import ResultLoader
-from pension_crawler.utils import BaseSpider
+from pension_crawler.utils import SearchSpider
 
 from .settings import SETTINGS
 
 
-class BingSpider(BaseSpider):
+class BingSpider(SearchSpider):
 
     '''Parse Bing Search API results.'''
 
