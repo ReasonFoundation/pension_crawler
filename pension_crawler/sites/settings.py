@@ -2,23 +2,26 @@
 
 import os
 
-from pension_crawler.settings import DATA_DIR
+from pension_crawler.settings import DATA_DIR, DOWNLOAD_ENABLED
+from pension_crawler.utils import CustomSettings
+
+
+fields = [
+    'url', 'href', 'text', 'state', 'system', 'report_type', 'year', 'path'
+]
+custom_settings = CustomSettings(DOWNLOAD_ENABLED, fields)
 
 
 SETTINGS = {
 
-    # Custom settings
+    # Scrapy settings
 
-    'site_file': 'sites.txt',
+    'ITEM_PIPELINES': custom_settings.item_pipelines,
+    'FIELDS_TO_EXPORT': custom_settings.fields_to_export
+
+    # Custom settings
 
     'INPUT_DIR': os.path.join(DATA_DIR, 'input', 'sites'),
     'OUTPUT_DIR': os.path.join(DATA_DIR, 'output', 'sites'),
 
-    # Scrapy settings
-
-    'ITEM_PIPELINES': {
-        'scrapy.pipelines.files.FilesPipeline': 1,
-        'pension_crawler.pipelines.SitesExportPipeline': 300
-    },
-    'FIELDS_TO_EXPORT': ['url', 'href', 'text', 'path']
 }
