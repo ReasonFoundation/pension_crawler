@@ -13,6 +13,7 @@ class BaseItem(Item):
     system = Field()
     report_type = Field()
     year = Field()
+    page_count = Field()
     file_urls = Field()
     files = Field()
     timestamp = Field()
