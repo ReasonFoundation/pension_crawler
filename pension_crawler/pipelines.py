@@ -6,9 +6,74 @@ from datetime import datetime
 
 from scrapy.exceptions import NotConfigured
 from scrapy.exporters import CsvItemExporter
+from twisted.internet import reactor
+from twisted.internet.defer import Deferred, inlineCallbacks
+
+from pension_crawler.utils import PDFParser
 
 
-class CSVPipeline(object):
+class BasePipeline(object):
+
+    '''Common functionality for pipelines'''
+
+    def _path(self, item):
+        '''Return path or none.'''
+        try:
+            return item['files'][0]['path']
+        except IndexError:
+            pass
+
+
+class PDFParserPipeline(BasePipeline):
+
+    '''A pipeline for parsing text from PDF files.'''
+
+    # constructor
+
+    def __init__(self, page_count, tmp_dir, *args, **kwargs):
+        '''Set page count and temporary directory.'''
+        self.page_count = page_count
+        self.tmp_dir = tmp_dir
+
+    # class methods
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        '''Create a new instance from settings'''
+        page_count = crawler.settings.get('PAGE_COUNT')
+        temp_dir = crawler.settings.get('TEMP_DIR')
+        if not page_count:
+            raise NotConfigured('Page count not specified.')
+        if not temp_dir:
+            raise NotConfigured('Temporary directory not specified.')
+        return cls(page_count, temp_dir)
+
+    # private method
+
+    def _parse(self, path, deferred):
+        '''Parse PDF and yield price and page_count.'''
+        parser = PDFParser(path, self.page_count, self.tmp_dir).parse()
+        reactor.callFromThread(
+            deferred.callback, parser.year, parser.page_count
+        )
+
+    # class method overrides
+
+    @inlineCallbacks
+    def process_item(self, item, spider):
+        '''Append results from PDF parser to item.'''
+        path = self._path(item)
+        if not path:
+            return item
+        deferred = Deferred()
+        reactor.callInThread(self._parse, path, deferred)
+        year, page_count = yield deferred
+        item['year'] = year
+        item['page_count'] = page_count
+        return item
+
+
+class CSVPipeline(BasePipeline):
 
     '''Export items to CSV.'''
 
@@ -35,13 +100,6 @@ class CSVPipeline(object):
         return cls(path, fields_to_export, *args, **kwargs)
 
     # private methods
-
-    def _path(self, item):
-        '''Return path or none.'''
-        try:
-            return item['files'][0]['path']
-        except IndexError:
-            return ''
 
     def _export(self, item):
         '''Export row to CSV file.'''
