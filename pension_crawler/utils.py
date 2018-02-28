@@ -11,11 +11,96 @@ import textract
 import tldextract
 
 from PyPDF2 import PdfFileReader, PdfFileWriter
+from PyPDF2.utils import PdfReadError
 from scrapy import Spider
 from scrapy.exceptions import NotConfigured
 
 
 logger = logging.getLogger(__name__)
+
+
+class PDFCutter(object):
+
+    '''Cut PDF to target page count.'''
+
+    # constructor
+
+    def __init__(self, path, count, temp_dir):
+        '''Set PDF path, target page count and temporary directory.'''
+        self.path = path
+        self.count = count
+        self.temp_dir = temp_dir
+
+    # properties
+
+    @property
+    def temp_file(self):
+        '''Return full path to temporary file.'''
+        fname = '{}.pdf'.format(uuid.uuid4().hex)
+        return os.path.join(self.temp_dir, fname)
+
+    # private methods
+
+    def _write(self, reader, path, count):
+        '''Write PDF to temporary directory.'''
+        writer = PdfFileWriter()
+        for i in range(count):
+            writer.addPage(reader.getPage(i))
+        with open(path, 'wb') as file_:
+            writer.write(file_)
+
+    # public methods
+
+    def cut(self):
+        '''Cut and write if PDF has more pages than target.'''
+        with open(self.path, 'rb') as file_:
+            reader = PdfFileReader(file_)
+            count = reader.getNumPages()
+            if self.count < count:
+                path = self.temp_file
+                self._write(reader, path, self.count)
+                self.path = path
+            else:
+                self.count = count
+
+
+class PDFReader(object):
+
+    '''Extract text from PDF.'''
+
+    # constructor
+
+    def __init__(self, path, count):
+        '''Set path and page count.'''
+        self.path = path
+        self.count = count
+        self.text = ''
+
+    # private methods
+
+    def _pypdf2(self):
+        '''Read text from PDF using pypdf2.'''
+        text = []
+        with open(self.path, 'rb') as file_:
+            reader = PdfFileReader(file_)
+            for i in range(self.count):
+                text.append(reader.getPage(i).extractText())
+        return '\n'.join(text).strip()
+
+    def _textract(self):
+        '''Read text from PDF using textract.'''
+        text = textract.process(self.path, method='tesseract', language='eng')
+        return text.decode('utf-8').strip()
+
+    # public methods
+
+    def read(self):
+        '''Read text from PDF.'''
+        self.text = self._pypdf2()
+        if not self.text:
+            self.text = self._textract()
+        if not self.text:
+            return
 
 
 class PDFParser(object):
@@ -24,90 +109,48 @@ class PDFParser(object):
 
     # constructor
 
-    def __init__(self, path, read_count, temp_dir):
-        '''Set path and read count. Initialize reader and text to null.'''
+    def __init__(self, path, count, temp_dir):
+        '''Set path, page count and temporary directory..'''
         self.path = path
-        self.original_count = read_count
+        self.count = count
         self.temp_dir = temp_dir
-        self.reader = None
-        self.page_count = None
-        self.read_count = None
         self.year = None
 
     # private methods
 
-    def _get_reader(self):
-        '''Return reader object.'''
-        with open(self.path, 'rb') as file_:
-            return PdfFileReader(file_)
-
-    def _get_read_count(self):
-        '''Return page count if greater than read count else read count.'''
-        if self.page_count >= self.original_count:
-            return self.original_count
-        return self.page_count
-
-    def _write_pdf(self):
-        '''Cut PDF file to read count pages and write to temporary file.'''
-        writer = PdfFileWriter()
-        for i in self.read_count:
-            writer.addPage(self.reader.getPage(i))
-        with open(self.path, 'wb') as file_:
-            writer.write(file_)
-
-    def _remove_pdf(self):
-        '''Remove PDF file from temporary directory.'''
+    def _year(self, text):
+        '''Match year with regex.'''
         try:
-            os.remove(self.path)
-        except OSError:
+            return re.search(r'(19|20)\d{2}', text).group()
+        except AttributeError:
             pass
 
-    def _parse_pypdf2(self):
-        '''Read text from PDF file using pypdf2.'''
-        text = []
-        for i in range(self.read_count):
-            page = self.reader.getPage(i)
-            text.append(page.extractText())
-        return '\n'.join(text).strip()
-
-    def _parse_textract(self):
-        '''Read text from pdf file using textract.'''
-        text = textract.process(self.path, method='tesseract', language='eng')
-        return text.strip()
-
-    def _get_year(self, text):
-        '''Read year from text using regex.'''
-        if not text:
-            return
-        match = re.search(r'\b(19|20)\d{2}\b', text)
-        if match:
-            return match.group()
-
-    def _mod_and_parse(self):
-        '''Parse when PDF needs to be transformed.'''
-        name = '{}.pdf'.format(uuid.uuid4().hex)
-        self.path = os.path.join(self.temp_dir, name)
-        self._write_pdf()
-        self.reader = self._get_reader()
-        self._remove_pdf()
-
-    def _get_text(self):
-        '''Get text using pypdf2 or textract.'''
-        text = self._parse_pypdf2()
-        if not text:
-            text = self._parse_textract()
-        return text
+    def _remove(self, path):
+        '''Remove file if it exists.'''
+        try:
+            os.remove(path)
+        except OSError:
+            pass
 
     # public methods
 
     def parse(self):
         '''Parse year from PDF file.'''
-        self.reader = self._get_reader()
-        self.page_count = self.reader.getNumPages()
-        self.read_count = self._get_read_count()
-        if self.read_count >= self.original_count:
-            self._mod_and_parse()
-        self.year = self._get_year(self._get_text())
+        try:
+            cutter = PDFCutter(self.path, self.count, self.temp_dir)
+            cutter.cut()
+        except PdfReadError:
+            self.count = None
+            return
+        try:
+            reader = PDFReader(cutter.path, self.count)
+            reader.read()
+        except (TypeError, KeyError):
+            return
+        if not self.path == cutter.path:
+            self._remove(cutter.path)
+        self.count = cutter.count
+        self.year = self._year(reader.text)
 
 
 class BaseSpider(Spider):
@@ -116,8 +159,9 @@ class BaseSpider(Spider):
 
     @staticmethod
     def _data(settings):
+        '''Return matrix from CSV file.'''
         input_dir = settings.get('INPUT_DIR')
-        input_file = settings.get('input_file')
+        input_file = settings.get('INPUT_FILE')
         if not input_dir:
             raise NotConfigured('Input directory not specified.')
         if not input_file:
@@ -134,9 +178,9 @@ class BaseSpider(Spider):
     def _meta(self, row):
         '''Return request meta dictionary.'''
         return {
-            'state': row.get('state', ''),
-            'system': row.get('system', ''),
-            'report_type': row.get('report_type', '')
+            'state': row.get('state'),
+            'system': row.get('system'),
+            'report_type': row.get('report_type')
         }
 
     def _process_meta(self, item, meta):
@@ -183,7 +227,8 @@ class CustomSettings(object):
             }
         return {
             'scrapy.pipelines.files.FilesPipeline': 1,
-            'pension_crawler.pipelines.CSVPipeline': 300
+            'pension_crawler.pipelines.PDFPipeline': 300,
+            'pension_crawler.pipelines.CSVPipeline': 310
         }
 
     @property
