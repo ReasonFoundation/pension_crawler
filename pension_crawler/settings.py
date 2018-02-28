@@ -11,11 +11,11 @@ HTTPCACHE_ENABLED = True
 # Custom settings
 
 DATA_DIR = os.path.join(os.getcwd(), 'data')
+TEMP_DIR = os.path.join(DATA_DIR, 'temp')
 BLACKLIST_FILE = os.path.join(DATA_DIR, 'blacklist.csv')
 DOWNLOAD_ENABLED = True
 DEPTH = 1
 PAGE_COUNT = 1
-TEMP_DIR = os.path.join(DATA_DIR, 'temp')
 USER_AGENTS = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like '
     'Gecko) Chrome/63.0.3239.132 Safari/537.36',
@@ -48,10 +48,10 @@ SPIDER_MODULES = [
 ]
 DOWNLOADER_MIDDLEWARES = {
     'pension_crawler.middlewares.BlacklistMiddleware': 400,
-    'pension_crawler.middlewares.UserAgentMiddleware': 410
+    'pension_crawler.middlewares.UserAgentMiddleware': 410,
 }
 FILES_STORE = os.path.join(DATA_DIR, 'downloads')
-COOKIES_ENABLED = False,
-RETRY_ENABLED = False,
-DOWNLOAD_TIMEOUT = 90,
+COOKIES_ENABLED = False
+RETRY_ENABLED = False
+DOWNLOAD_TIMEOUT = 90
 DOWNLOAD_DELAY = 0.5
