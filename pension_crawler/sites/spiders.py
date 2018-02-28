@@ -41,7 +41,7 @@ class SitesSpider(BaseSpider):
     def _href(self, url, node):
         '''Get href full location.'''
         parsed_url = urlparse(url)
-        href = node.xpath('@href').extract_first()
+        href = node.xpath('@href').extract_first().replace('../', '')
         parsed_href = urlparse(href)
         if not (parsed_href.scheme or parsed_href.netloc):
             parsed_href = parsed_href._replace(scheme=parsed_url.scheme)
