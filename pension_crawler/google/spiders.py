@@ -41,15 +41,15 @@ class GoogleSpider(SearchSpider):
     def from_crawler(cls, crawler, *args, **kwargs):
         '''Pass settings to constructor.'''
         data = GoogleSpider._data(crawler.settings)
-        depth = crawler.settings.get('depth')
-        api_key = crawler.settings.get('api_key')
+        depth = crawler.settings.get('DEPTH')
+        api_key = crawler.settings.get('API_KEY')
         engine_id = crawler.settings.get('ENGINE_ID')
         if not depth:
             raise NotConfigured('Crawl depth not specified.')
         if not api_key:
             raise NotConfigured('API key not specified.')
         if not engine_id:
-            raise NotConfigured('Input directory not specified.')
+            raise NotConfigured('Engine ID not specified.')
         return cls(crawler, data, depth, api_key, engine_id, *args, **kwargs)
 
     # private methods
