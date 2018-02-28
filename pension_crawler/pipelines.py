@@ -14,7 +14,7 @@ from pension_crawler.utils import PDFParser
 
 class BasePipeline(object):
 
-    '''Common functionality for pipelines'''
+    '''Common functionality for pipelines.'''
 
     def _path(self, item):
         '''Return path or none.'''
@@ -24,38 +24,39 @@ class BasePipeline(object):
             pass
 
 
-class PDFParserPipeline(BasePipeline):
+class PDFPipeline(BasePipeline):
 
-    '''A pipeline for parsing text from PDF files.'''
+    '''A pipeline for parsing year from PDF files.'''
 
     # constructor
 
-    def __init__(self, page_count, tmp_dir, *args, **kwargs):
+    def __init__(self, count, data_dir, temp_dir, *args, **kwargs):
         '''Set page count and temporary directory.'''
-        self.page_count = page_count
-        self.tmp_dir = tmp_dir
+        self.count = count
+        self.data_dir = data_dir
+        self.temp_dir = temp_dir
 
     # class methods
 
     @classmethod
     def from_crawler(cls, crawler):
-        '''Create a new instance from settings'''
+        '''Pass data to constructor.'''
         page_count = crawler.settings.get('PAGE_COUNT')
+        data_dir = crawler.settings.get('FILES_STORE')
         temp_dir = crawler.settings.get('TEMP_DIR')
         if not page_count:
             raise NotConfigured('Page count not specified.')
         if not temp_dir:
             raise NotConfigured('Temporary directory not specified.')
-        return cls(page_count, temp_dir)
+        return cls(page_count, data_dir, temp_dir)
 
     # private method
 
     def _parse(self, path, deferred):
-        '''Parse PDF and yield price and page_count.'''
-        parser = PDFParser(path, self.page_count, self.tmp_dir).parse()
-        reactor.callFromThread(
-            deferred.callback, parser.year, parser.page_count
-        )
+        '''Parse PDF wrapper.'''
+        parser = PDFParser(path, self.count, self.temp_dir)
+        parser.parse()
+        reactor.callFromThread(deferred.callback, (parser.year, parser.count))
 
     # class method overrides
 
@@ -65,11 +66,12 @@ class PDFParserPipeline(BasePipeline):
         path = self._path(item)
         if not path:
             return item
+        path = os.path.join(self.data_dir, path)
         deferred = Deferred()
         reactor.callInThread(self._parse, path, deferred)
-        year, page_count = yield deferred
+        year, count = yield deferred
         item['year'] = year
-        item['page_count'] = page_count
+        item['page_count'] = count
         return item
 
 
@@ -80,7 +82,7 @@ class CSVPipeline(BasePipeline):
     # constructor
 
     def __init__(self, path, fields, *args, **kwargs):
-        '''Set output file object, fields to export and CSV exporter.'''
+        '''Set output file object and CSV exporter.'''
         self.file_ = open(path, 'w+b')
         self.exporter = CsvItemExporter(self.file_, fields_to_export=fields)
 
@@ -88,7 +90,7 @@ class CSVPipeline(BasePipeline):
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
-        '''Pass output file and fields to export to constructor.'''
+        '''Pass data to constructor.'''
         output_dir = crawler.settings.get('OUTPUT_DIR')
         fields_to_export = crawler.settings.get('FIELDS_TO_EXPORT')
         if not output_dir:
@@ -106,9 +108,9 @@ class CSVPipeline(BasePipeline):
         data = {}
         for key in self.exporter.fields_to_export:
             if key == 'path':
-                data[key] = self._path(item)
+                data['path'] = self._path(item)
             else:
-                data[key] = item[key]
+                data[key] = item.get(key)
         self.exporter.export_item(data)
 
     # overriden class methods
