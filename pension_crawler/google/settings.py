@@ -22,8 +22,9 @@ SETTINGS = {
 
     # Custom settings
 
+    'INPUT_FILE': 'default.csv',
     'INPUT_DIR': os.path.join(DATA_DIR, 'input', 'google'),
     'OUTPUT_DIR': os.path.join(DATA_DIR, 'output', 'google'),
-    'SEARCH_ENGINE_ID': 'AIzaSyDQmBGbFQBXdBCz94lNWHV86KEdrAFdQfw',
     'API_KEY': '006550828608930697575:rdedpbbuy94',
+    'ENGINE_ID': 'AIzaSyDQmBGbFQBXdBCz94lNWHV86KEdrAFdQfw'
 }

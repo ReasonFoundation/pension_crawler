@@ -22,6 +22,7 @@ SETTINGS = {
 
     # Custom settings
 
+    'INPUT_FILE': 'default.csv',
     'INPUT_DIR': os.path.join(DATA_DIR, 'input', 'sites'),
     'OUTPUT_DIR': os.path.join(DATA_DIR, 'output', 'sites'),
 
