@@ -40,8 +40,8 @@ class BingSpider(SearchSpider):
     def from_crawler(cls, crawler, *args, **kwargs):
         '''Pass settings to constructor.'''
         data = BingSpider._data(crawler.settings)
-        depth = crawler.settings.get('depth')
-        api_key = crawler.settings.get('api_key')
+        depth = crawler.settings.get('DEPTH')
+        api_key = crawler.settings.get('API_KEY')
         if not depth:
             raise NotConfigured('Crawl depth not specified.')
         if not api_key:
