@@ -3,6 +3,7 @@ setup.py
 twistd.pid
 
 downloads/
+temp/
 output/
 build/
 dbs/
