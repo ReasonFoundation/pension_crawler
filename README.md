@@ -67,6 +67,8 @@ The first found year is extracted using REGEX and is stored in the CSV output.
 
 This project includes provisioning and deployment scripts for running the crawlers localy on a Debian based systems. Make sure you are running the deployment script as root/sudo user!
 
+For Mac users, make sure you have [homebrew](https://brew.sh/) installed. This is needed in order to install all the necessary dependencies of Textract. More details about that in this [link](http://textract.readthedocs.io/en/latest/installation.html). It has a guide for Mac, Ubuntu/Debian, and other OS'.
+
 To start the deployment process clone this repo from the command line, change directory to deployment folder and execute the local.sh script:
 
 ```
