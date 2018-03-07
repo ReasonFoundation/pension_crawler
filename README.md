@@ -77,7 +77,7 @@ cd pension_crawler/deployment
 sudo ./local.sh
 ```
 
-After the script is finished you should be able to run scrapy cli commands. To start the crawl process run the following commands with the default settings:
+After the script is finished, change the Google and Bing API keys in pension_crawler/pension_crawler/settings.py.  Then you should be able to run scrapy cli commands. To start the crawl process run the following commands with the default settings:
 
 ```
 scrapy crawl <spider-name>
