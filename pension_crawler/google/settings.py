@@ -25,6 +25,6 @@ SETTINGS = {
     'INPUT_FILE': 'default.csv',
     'INPUT_DIR': os.path.join(DATA_DIR, 'input', 'google'),
     'OUTPUT_DIR': os.path.join(DATA_DIR, 'output', 'google'),
-    'API_KEY': '006550828608930697575:rdedpbbuy94',
-    'ENGINE_ID': 'AIzaSyDQmBGbFQBXdBCz94lNWHV86KEdrAFdQfw'
+    'API_KEY': 'AIzaSyDQmBGbFQBXdBCz94lNWHV86KEdrAFdQfw',
+    'ENGINE_ID': '006550828608930697575:rdedpbbuy94'
 }
