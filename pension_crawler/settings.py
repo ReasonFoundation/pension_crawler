@@ -3,11 +3,6 @@
 import os
 
 
-# Development settings
-
-HTTPCACHE_ENABLED = True
-
-
 # Custom settings
 
 DATA_DIR = os.path.join(os.getcwd(), 'data')
@@ -39,6 +34,7 @@ USER_AGENTS = [
     '.0'
 ]
 
+
 # Scrapy settings
 
 BOT_NAME = 'pension_crawler'
@@ -55,3 +51,5 @@ COOKIES_ENABLED = False
 RETRY_ENABLED = False
 DOWNLOAD_TIMEOUT = 90
 DOWNLOAD_DELAY = 0.5
+HTTPCACHE_ENABLED = True
+HTTPCACHE_EXPIRATION_SECS = 604800
