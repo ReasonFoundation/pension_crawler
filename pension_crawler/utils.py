@@ -30,6 +30,7 @@ class PDFCutter(object):
         self.path = path
         self.count = count
         self.temp_dir = temp_dir
+        self.original = None
 
     # properties
 
@@ -55,13 +56,13 @@ class PDFCutter(object):
         '''Cut and write if PDF has more pages than target.'''
         with open(self.path, 'rb') as file_:
             reader = PdfFileReader(file_)
-            count = reader.getNumPages()
-            if self.count < count:
+            self.original = reader.getNumPages()
+            if self.count < self.original:
                 path = self.temp_file
                 self._write(reader, path, self.count)
                 self.path = path
             else:
-                self.count = count
+                self.count = self.original
 
 
 class PDFReader(object):
@@ -149,7 +150,7 @@ class PDFParser(object):
             return
         if not self.path == cutter.path:
             self._remove(cutter.path)
-        self.count = cutter.count
+        self.count = cutter.original
         self.year = self._year(reader.text)
 
 
