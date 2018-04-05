@@ -97,7 +97,20 @@ class SitesSpider(BaseSpider):
 
     def parse(self, response):
         '''Parse search results.'''
-        for node in response.xpath('//a[contains(@href,".pdf")]'):
-            item = self._process_item(response.url, node)
-            item = self._process_meta(item, response.meta)
-            yield item
+        pdf_nodes = response.xpath('//a[contains(@href,".pdf")]')
+        if len(pdf_nodes) > 1:
+            for node in pdf_nodes:
+                item = self._process_item(response.url, node)
+                item = self._process_meta(item, response.meta)
+                yield item
+        else:
+            '''
+            Code added by Joseph J. Bautista
+            - Context: Some sites have reports that don't link directly to the report. This serves as a flag.
+            - NOTE: Needs some improvement as you'd have to filter out sites that actually work later on. Just a prototype.
+            - SAMPLE COMMAND: scrapy crawl sites -o WeirdSites.json
+            '''
+            url = response.url
+            yield {
+                'url': url
+            }
