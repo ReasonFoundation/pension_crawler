@@ -27,6 +27,7 @@ class SitesSpider(BaseSpider):
         super(SitesSpider, self).__init__(*args, **kwargs)
         self.crawler = crawler
         self.data = data
+        self.years = [str(year) for year in range(1960,2018,1)]
 
     # class methods
 
@@ -37,11 +38,15 @@ class SitesSpider(BaseSpider):
         return cls(crawler, data, *args, **kwargs)
 
     # private methods
-
+	"""
+	The previous href variable assignment here was causing errors. The new one fixes that.
+	-- Joseph J. Bautista
+	"""
     def _href(self, url, node):
         '''Get href full location.'''
         parsed_url = urlparse(url)
-        href = node.xpath('@href').extract_first().replace('../', '')
+        # href = node.xpath('@href').extract_first().replace('../', '')
+        href = node.extract().replace("../", "")
         parsed_href = urlparse(href)
         if not (parsed_href.scheme or parsed_href.netloc):
             parsed_href = parsed_href._replace(scheme=parsed_url.scheme)
@@ -66,9 +71,17 @@ class SitesSpider(BaseSpider):
         for row in self.data:
             yield Request(row.get('url'), meta=self._meta(row))
 
+	"""
+	Changed the xpath command here to look for hrefs and only process those with the substring 'pdf' in them.
+	-- Joseph J. Bautista
+	"""
     def parse(self, response):
         '''Parse search results.'''
-        for node in response.xpath('//a[contains(@href,".pdf")]'):
-            item = self._process_item(response.url, node)
-            item = self._process_meta(item, response.meta)
-            yield item
+        # pdf_nodes = response.xpath('//a[contains(@href,".pdf")]')
+        pdf_nodes = response.xpath("//@href")
+        for node in pdf_nodes:
+            href = node.extract()
+            if "pdf" in href.lower():
+                item = self._process_item(response.url, node)
+                item = self._process_meta(item, response.meta)
+                yield item
