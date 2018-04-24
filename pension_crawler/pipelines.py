@@ -123,14 +123,16 @@ class CSVPipeline(BasePipeline):
 
     def open_spider(self, *args, **kwargs):
         '''Start exporting items on signal.'''
-        logger.info('Started exporting data to file: {}'.format(self.fname))
+        message = 'CSV pipeline - Started exporting to file: {}'
+        logger.info(message.format(self.fname))
         self.exporter.start_exporting()
 
     def close_spider(self, *args, **kwargs):
         '''Stop exporting items on signal.'''
         self.exporter.finish_exporting()
         self.file_.close()
-        logger.info('Finished exporting data to file: {}'.format(self.fname))
+        message = 'CSV pipeline - Finished exporting to file: {}'
+        logger.info(message.format(self.fname))
 
     def process_item(self, item, *args, **kwargs):
         '''Export item to csv file and return item.'''
