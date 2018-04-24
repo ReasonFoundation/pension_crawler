@@ -15,6 +15,7 @@ function _print() {
 # Create output directories
 
 function configure_directories() {
+  mkdir ../data/logs
   mkdir ../data/temp
   mkdir ../data/output
   DIRECTORIES=(bing google sites)

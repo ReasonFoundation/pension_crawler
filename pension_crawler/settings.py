@@ -2,10 +2,13 @@
 
 import os
 
+from datetime import datetime
+
 
 # Custom settings
 
 DATA_DIR = os.path.join(os.getcwd(), 'data')
+LOG_NAME = '{}.log'.format(datetime.now().strftime('%Y-%m-%d-%H-%M'))
 TEMP_DIR = os.path.join(DATA_DIR, 'temp')
 BLACKLIST_FILE = os.path.join(DATA_DIR, 'blacklist.csv')
 DOWNLOAD_ENABLED = True
@@ -39,6 +42,7 @@ USER_AGENTS = [
 
 BOT_NAME = 'pension_crawler'
 LOG_LEVEL = 'DEBUG'
+LOG_FILE = os.path.join(DATA_DIR, LOG_NAME)
 SPIDER_MODULES = [
     'pension_crawler.google', 'pension_crawler.bing', 'pension_crawler.sites'
 ]
