@@ -42,7 +42,7 @@ USER_AGENTS = [
 
 BOT_NAME = 'pension_crawler'
 LOG_LEVEL = 'DEBUG'
-LOG_FILE = os.path.join(DATA_DIR, LOG_NAME)
+LOG_FILE = os.path.join(DATA_DIR, 'logs', LOG_NAME)
 SPIDER_MODULES = [
     'pension_crawler.google', 'pension_crawler.bing', 'pension_crawler.sites'
 ]
