@@ -88,3 +88,9 @@ Crawl logs are stored into data/logs directory. Every log file is timestamped an
 cd pension_crawler/data/logs
 tail -fn100 crawl-<timestamp>.log
 ```
+
+To find patterns in log files, cat and grep can be used:
+
+```
+cat <logfile> | grep "<pattern>"
+```
