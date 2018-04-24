@@ -60,11 +60,17 @@ class PDFCutter(object):
             reader = PdfFileReader(file_)
             self.original = reader.getNumPages()
             if self.count < self.original:
+                message = 'PDF cutter - Resizing PDF {} to {} pages.'
+                logger.info(message.format(self.path, self.count))
                 path = self.temp_file
                 self._write(reader, path, self.count)
                 self.path = path
+                message = 'PDF cutter - Created temporary PDF: {}.'
+                logger.info(message.format(self.path))
             else:
                 self.count = self.original
+                message = 'PDF cutter - PDF {} not modified.'
+                logger.info(message.format(self.path))
 
 
 class PDFReader(object):
@@ -83,6 +89,8 @@ class PDFReader(object):
 
     def _pypdf2(self):
         '''Read text from PDF using pypdf2.'''
+        message = 'PDF reader - Trying to parse PDF {} text using PyPDF2.'
+        logger.info(message.format(self.path))
         text = []
         with open(self.path, 'rb') as file_:
             reader = PdfFileReader(file_)
@@ -92,6 +100,8 @@ class PDFReader(object):
 
     def _textract(self):
         '''Read text from PDF using textract.'''
+        message = 'PDF reader - Trying to parse PDF {} text using Textract.'
+        logger.info(message.format(self.path))
         text = textract.process(self.path, method='tesseract', language='eng')
         return text.decode('utf-8').strip()
 
@@ -101,8 +111,14 @@ class PDFReader(object):
         '''Read text from PDF.'''
         self.text = self._pypdf2()
         if not self.text:
+            message = 'PDF reader - Failed to parse PDF {} text using PyPDF2.'
+            logger.info(message.format(self.path))
             self.text = self._textract()
         if not self.text:
+            message = 'PDF reader - Failed to parse PDF {} text using Textract.'
+            logger.info(message.format(self.path))
+            message = 'PDF reader - Text not found in PDF: {}.'
+            logger.info(message.format(self.path))
             return
 
 
@@ -124,8 +140,13 @@ class PDFParser(object):
     def _year(self, text):
         '''Match year with regex.'''
         try:
-            return re.search(r'(19|20)\d{2}', text).group()
+            value = re.search(r'(19|20)\d{2}', text).group()
+            message = 'PDF parser - Found PDF file {} year: {}.'
+            logger.info(message.format(self.path, value))
+            return value
         except AttributeError:
+            message = 'PDF parser - Failed to find PDF file {} year.'
+            logger.info(message.format(self.path))
             pass
 
     def _remove(self, path):
@@ -143,12 +164,17 @@ class PDFParser(object):
             cutter = PDFCutter(self.path, self.count, self.temp_dir)
             cutter.cut()
         except PdfReadError:
+            message = 'PDF parser - Failed to read PDF: {}'
+            logger.info(message.format(self.path))
             self.count = None
             return
         try:
             reader = PDFReader(cutter.path, self.count)
             reader.read()
         except (TypeError, KeyError):
+            message = 'PDF parser - Failed to parse PDF: {}'
+            logger.info(message.format(self.path))
+            self.count = None
             return
         if not self.path == cutter.path:
             self._remove(cutter.path)
