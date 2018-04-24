@@ -82,4 +82,9 @@ After the script is finished, change the Google and Bing API keys in pension_cra
 scrapy crawl <spider-name>
 ```
 
-You should start seeing scrapy logs after command execution.
+Crawl logs are stored into data/logs directory. Every log file is timestamped and can be monitored in realtime using the following command:
+
+```
+cd pension_crawler/data/logs
+tail -fn100 crawl-<timestamp>.log
+```
