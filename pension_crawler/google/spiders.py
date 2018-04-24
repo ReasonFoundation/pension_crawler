@@ -63,9 +63,9 @@ class GoogleSpider(SearchSpider):
 
     def _url(self, row):
         '''Return request url.'''
-        data = {
-            'cx': self.engine_id, 'key': self.api_key, 'q': self._query(row)
-        }
+        query = self._query(row)
+        self.logger.info('Google spider - Request for query: {}'.format(query))
+        data = {'cx': self.engine_id, 'key': self.api_key, 'q': query}
         start_date = row.get('start_date')
         end_date = row.get('end_date')
         if start_date and end_date:
@@ -94,7 +94,10 @@ class GoogleSpider(SearchSpider):
     def parse(self, response):
         '''Parse search results.'''
         data = json.loads(response.body_as_unicode())
-        for node in data.get('items', []):
+        results = data.get('items', [])
+        message = 'Google spider - Got {} results for url: {}'
+        self.logger.info(message.format(len(results), response.url))
+        for node in results:
             item = self._process_item(node)
             item = self._process_meta(item, response.meta)
             item['keyword'] = data['queries']['request'][0]['searchTerms']
@@ -109,3 +112,6 @@ class GoogleSpider(SearchSpider):
             url = '{}&start={}'.format(response.request.url, start)
             yield Request(url, meta=response.meta)
             self.depth -= 1
+            self.logger.info('Google spider - Processing next page.')
+        else:
+            self.logger.info('Google spider - Next page limit reached.')

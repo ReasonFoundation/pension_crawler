@@ -65,7 +65,9 @@ class BingSpider(SearchSpider):
 
     def _url(self, row):
         '''Return request url.'''
-        data = {'q': self._query(row)}
+        query = self._query(row)
+        self.logger.info('Bing spider - Request for query: {}'.format(query))
+        data = {'q': query}
         freshness = row.get('freshness')
         if freshness:
             data['freshness'] = self._freshness(freshness)
@@ -93,7 +95,10 @@ class BingSpider(SearchSpider):
     def parse(self, response):
         '''Parse search results.'''
         data = json.loads(response.body_as_unicode())
-        for node in data.get('webPages', {}).get('value', []):
+        results = data.get('webPages', {}).get('value', [])
+        message = 'Bing spider - Got {} results for url: {}'
+        self.logger.info(message.format(len(results), response.url))
+        for node in results:
             item = self._process_item(node)
             item = self._process_meta(item, response.meta)
             item['keyword'] = data['queryContext']['originalQuery']
@@ -108,3 +113,6 @@ class BingSpider(SearchSpider):
             url = '{}&offset={}'.format(response.request.url, start)
             yield Request(url, meta=response.meta, headers=self.headers)
             self.depth -= 1
+            self.logger.info('Bing spider - Processing next page.')
+        else:
+            self.logger.info('Bing spider - Next page limit reached.')

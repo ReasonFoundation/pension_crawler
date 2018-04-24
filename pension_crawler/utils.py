@@ -169,8 +169,11 @@ class BaseSpider(Spider):
             raise NotConfigured('Input directory not specified.')
         if not input_file:
             raise NotConfigured('Input file not specified.')
+        message = 'Base spider - Starting crawl for file: {}'
+        logger.info(message.format(input_file))
+        fname = os.path.join(input_dir, input_file)
         try:
-            with open(os.path.join(input_dir, input_file), 'r') as file_:
+            with open(fname, 'r') as file_:
                 reader = csv.DictReader(file_)
                 return list(reader)
         except IOError:
@@ -225,9 +228,11 @@ class CustomSettings(object):
     def item_pipelines(self):
         '''Return item pipelines.'''
         if not self.download_enabled:
+            logger.info('Custom settings - PDF Download disabled.')
             return {
                 'pension_crawler.pipelines.CSVPipeline': 300,
             }
+        logger.info('Custom settings - PDF Download enabled.')
         return {
             'scrapy.pipelines.files.FilesPipeline': 1,
             'pension_crawler.pipelines.PDFPipeline': 300,
