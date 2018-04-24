@@ -8,7 +8,7 @@ from datetime import datetime
 # Custom settings
 
 DATA_DIR = os.path.join(os.getcwd(), 'data')
-LOG_NAME = '{}.log'.format(datetime.now().strftime('%Y-%m-%d-%H-%M'))
+LOG_NAME = 'crawl-{}.log'.format(datetime.now().strftime('%Y-%m-%d-%H-%M'))
 TEMP_DIR = os.path.join(DATA_DIR, 'temp')
 BLACKLIST_FILE = os.path.join(DATA_DIR, 'blacklist.csv')
 DOWNLOAD_ENABLED = True
