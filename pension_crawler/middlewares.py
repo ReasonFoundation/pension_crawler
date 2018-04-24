@@ -7,6 +7,7 @@ import tldextract
 
 from scrapy.exceptions import NotConfigured, IgnoreRequest
 
+
 # logging
 
 logger = logging.getLogger(__name__)

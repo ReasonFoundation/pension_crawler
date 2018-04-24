@@ -1,5 +1,6 @@
 '''pipelines.py'''
 
+import logging
 import os
 
 from datetime import datetime
@@ -10,6 +11,11 @@ from twisted.internet import reactor
 from twisted.internet.defer import Deferred, inlineCallbacks
 
 from pension_crawler.utils import PDFParser
+
+
+# logging
+
+logger = logging.getLogger(__name__)
 
 
 class BasePipeline(object):
@@ -81,9 +87,10 @@ class CSVPipeline(BasePipeline):
 
     # constructor
 
-    def __init__(self, path, fields, *args, **kwargs):
+    def __init__(self, output_dir, fname, fields, *args, **kwargs):
         '''Set output file object and CSV exporter.'''
-        self.file_ = open(path, 'w+b')
+        self.fname = fname
+        self.file_ = open(os.path.join(output_dir, fname), 'w+b')
         self.exporter = CsvItemExporter(self.file_, fields_to_export=fields)
 
     # class methods
@@ -97,9 +104,8 @@ class CSVPipeline(BasePipeline):
             raise NotConfigured('Output directory not specified.')
         if not fields_to_export:
             raise NotConfigured('Fields to export not specified.')
-        timestamp = datetime.now().strftime('%Y-%m-%d-%H-%M')
-        path = os.path.join(output_dir, '{}.csv'.format(timestamp))
-        return cls(path, fields_to_export, *args, **kwargs)
+        fname = '{}.csv'.format(datetime.now().strftime('%Y-%m-%d-%H-%M'))
+        return cls(output_dir, fname, fields_to_export, *args, **kwargs)
 
     # private methods
 
@@ -117,12 +123,14 @@ class CSVPipeline(BasePipeline):
 
     def open_spider(self, *args, **kwargs):
         '''Start exporting items on signal.'''
+        logger.info('Started exporting data to file: {}'.format(self.fname))
         self.exporter.start_exporting()
 
     def close_spider(self, *args, **kwargs):
         '''Stop exporting items on signal.'''
         self.exporter.finish_exporting()
         self.file_.close()
+        logger.info('Finished exporting data to file: {}'.format(self.fname))
 
     def process_item(self, item, *args, **kwargs):
         '''Export item to csv file and return item.'''
