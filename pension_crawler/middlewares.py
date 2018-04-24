@@ -1,10 +1,15 @@
 '''middlewares.py'''
 
+import logging
 import random
 
 import tldextract
 
 from scrapy.exceptions import NotConfigured, IgnoreRequest
+
+# logging
+
+logger = logging.getLogger(__name__)
 
 
 class BlacklistMiddleware(object):
@@ -44,7 +49,10 @@ class BlacklistMiddleware(object):
     def process_request(self, request, *args, **kwargs):
         '''Ignore requests to domains specified in blacklist file.'''
         parsed = tldextract.extract(request.url)
-        if '.'.join((parsed.domain, parsed.suffix)) in self.data:
+        domain = '.'.join((parsed.domain, parsed.suffix))
+        if domain in self.data:
+            message = 'Blacklist middleware - Request to {} filtered.'
+            logger.info(message.format(domain))
             raise IgnoreRequest()
 
 
