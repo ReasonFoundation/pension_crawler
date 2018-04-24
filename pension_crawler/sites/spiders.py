@@ -64,11 +64,17 @@ class SitesSpider(BaseSpider):
     def start_requests(self):
         '''Dispatch requests per site url.'''
         for row in self.data:
-            yield Request(row.get('url'), meta=self._meta(row))
+            url = row.get('url')
+            message = 'Sites spider - Parsing PDFs for url: {}'
+            self.logger.info(message.format(url))
+            yield Request(url, meta=self._meta(row))
 
     def parse(self, response):
         '''Parse search results.'''
-        for node in response.xpath('//a[contains(@href,".pdf")]'):
+        results = response.xpath('//a[contains(@href,".pdf")]')
+        message = 'Sites spider - Found {} PDF links for url: {}'
+        self.logger.info(message.format(len(results), response.url))
+        for node in results:
             item = self._process_item(response.url, node)
             item = self._process_meta(item, response.meta)
             yield item

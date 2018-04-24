@@ -96,7 +96,7 @@ class BingSpider(SearchSpider):
         '''Parse search results.'''
         data = json.loads(response.body_as_unicode())
         results = data.get('webPages', {}).get('value', [])
-        message = 'Bing spider - Got {} results for url: {}'
+        message = 'Bing spider - Found {} results for url: {}'
         self.logger.info(message.format(len(results), response.url))
         for node in results:
             item = self._process_item(node)
