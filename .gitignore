@@ -1,6 +1,7 @@
 *.pyc
 setup.py
 twistd.pid
+*.log
 
 downloads/
 temp/
