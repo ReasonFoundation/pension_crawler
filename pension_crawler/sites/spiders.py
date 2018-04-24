@@ -5,7 +5,7 @@ from urllib.parse import urlparse, urlunparse
 
 from scrapy import Request
 
-from pension_crawler.items import PDFLoader
+from pension_crawler.loaders import PDFLoader
 from pension_crawler.utils import BaseSpider
 
 from .settings import SETTINGS
