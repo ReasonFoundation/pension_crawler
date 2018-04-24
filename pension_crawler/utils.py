@@ -16,6 +16,8 @@ from scrapy import Spider
 from scrapy.exceptions import NotConfigured
 
 
+# logging
+
 logger = logging.getLogger(__name__)
 
 
