@@ -1,5 +1,7 @@
 '''spiders.py'''
 
+import re
+
 from datetime import datetime
 from urllib.parse import urlparse, urlunparse
 
@@ -59,6 +61,22 @@ class SitesSpider(BaseSpider):
         loader.add_value('timestamp', datetime.now().isoformat())
         return loader.load_item()
 
+    def _process_year(self, node):
+        '''Try to extract year from PDF link.'''
+        text_list = [
+            node.xpath('text()').extract_first(),
+            node.xpath('@href').extract_first()
+        ]
+        for text in text_list:
+            try:
+                value = re.search(r'(19|20)\d{2}', text).group()
+                message = 'Sites spider - Year {} found in link text {}.'
+                self.logger.info(message.format(value, text))
+                return value
+            except AttributeError:
+                message = 'Sites spider - Year not found in link text {}.'
+                self.logger.info(message.format(text))
+
     # class method overrides
 
     def start_requests(self):
@@ -81,4 +99,5 @@ class SitesSpider(BaseSpider):
         for node in results:
             item = self._process_item(response.url, node)
             item = self._process_meta(item, response.meta)
+            item['year'] = self._process_year(node)
             yield item
