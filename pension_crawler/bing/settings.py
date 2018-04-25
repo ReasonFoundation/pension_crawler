@@ -25,5 +25,5 @@ SETTINGS = {
     'INPUT_FILE': 'default.csv',
     'INPUT_DIR': os.path.join(DATA_DIR, 'input', 'bing'),
     'OUTPUT_DIR': os.path.join(DATA_DIR, 'output', 'bing'),
-    'API_KEY': 'ddb0cdbe8bbe408db2035d4328b7eec9',
+    'API_KEY': 'd2f4e926ef5142c0a9173e64032451c5',
 }
