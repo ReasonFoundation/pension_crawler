@@ -71,7 +71,11 @@ class SitesSpider(BaseSpider):
 
     def parse(self, response):
         '''Parse search results.'''
-        results = response.xpath('//a[contains(@href,".pdf")]')
+        results = []
+        for node in response.xpath('//a[contains(@href,"pdf")]'):
+            results.append(node)
+        for node in response.xpath('//a[contains(@href,"PDF")]'):
+            results.append(node)
         message = 'Sites spider - Found {} PDF links for url: {}'
         self.logger.info(message.format(len(results), response.url))
         for node in results:
