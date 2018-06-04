@@ -75,11 +75,11 @@ function configure_python() {
 
 # Add weekly cronjob
 
-function setup_cron() {
+function configure_cron() {
   JOB="1 0 * * 0 cd /home/reason/pension_crawler/ && scrapy crawl sites"
   (crontab -u reason -l ; echo "$JOB") | crontab -u reason -
   sudo systemctl restart cron.service
-  pprint "Cronjob started."
+  _print "Cronjob started."
 }
 
 
@@ -88,6 +88,7 @@ function setup_cron() {
 function main() {
   configure_system
   configure_python
+  configure_cron
   _print "Script finished."
 }
 
