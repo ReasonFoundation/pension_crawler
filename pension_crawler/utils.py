@@ -199,7 +199,7 @@ class BaseSpider(Spider):
         logger.info(message.format(input_file))
         fname = os.path.join(input_dir, input_file)
         try:
-            with open(fname, 'r') as file_:
+            with open(fname, 'r', encoding='utf-8-sig') as file_:
                 reader = csv.DictReader(file_)
                 return list(reader)
         except IOError:
