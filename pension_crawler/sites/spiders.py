@@ -73,7 +73,7 @@ class SitesSpider(BaseSpider):
                 message = 'Sites spider - Year {} found in link text {}.'
                 self.logger.info(message.format(value, text))
                 return value
-            except AttributeError:
+            except (TypeError, AttributeError):
                 message = 'Sites spider - Year not found in link text {}.'
                 self.logger.info(message.format(text))
 
