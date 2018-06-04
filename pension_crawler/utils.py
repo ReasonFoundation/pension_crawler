@@ -140,11 +140,11 @@ class PDFParser(object):
     def _year(self, text):
         '''Match year with regex.'''
         try:
-            value = re.search(r'(19|20)\d{2}', str(text)).group()
+            value = re.search(r'(19|20)\d{2}', text).group()
             message = 'PDF parser - Found PDF file {} year: {}.'
             logger.info(message.format(self.path, value))
             return value
-        except (AttributeError, TypeError):
+        except AttributeError:
             message = 'PDF parser - Failed to find PDF file {} year.'
             logger.info(message.format(self.path))
             pass
