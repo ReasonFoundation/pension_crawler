@@ -102,8 +102,13 @@ class PDFReader(object):
         '''Read text from PDF using textract.'''
         message = 'PDF reader - Trying to parse PDF {} text using Textract.'
         logger.info(message.format(self.path))
-        text = textract.process(self.path, method='tesseract', language='eng')
-        return text.decode('utf-8').strip()
+        try:
+            text = textract.process(
+                self.path, method='tesseract', language='eng'
+            )
+            return text.decode('utf-8').strip()
+        except UnicodeDecodeError:
+            pass
 
     # public methods
 
