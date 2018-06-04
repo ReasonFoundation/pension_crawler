@@ -144,7 +144,7 @@ class PDFParser(object):
             message = 'PDF parser - Found PDF file {} year: {}.'
             logger.info(message.format(self.path, value))
             return value
-        except AttributeError:
+        except (AttributeError, TypeError):
             message = 'PDF parser - Failed to find PDF file {} year.'
             logger.info(message.format(self.path))
             pass
