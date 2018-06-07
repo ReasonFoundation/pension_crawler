@@ -57,7 +57,7 @@ class IsDownloadedPipeline(BasePipeline):
             item['downloaded'] = ''
         else:
             fname = path.split('.')[0].replace('full/', '')
-            item['downloaded'] = fname in self.fnames
+            item['downloaded'] = fname not in self.fnames
         return item
 
 
