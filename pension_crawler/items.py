@@ -35,3 +35,4 @@ class PDFItem(BaseItem):
     url = Field()
     href = Field()
     text = Field()
+    downloaded = Field()
