@@ -267,7 +267,8 @@ class CustomSettings(object):
         return {
             'scrapy.pipelines.files.FilesPipeline': 1,
             'pension_crawler.pipelines.PDFPipeline': 300,
-            'pension_crawler.pipelines.CSVPipeline': 310
+            'pension_crawler.pipelines.IsDownloadedPipeline': 310,
+            'pension_crawler.pipelines.CSVPipeline': 320
         }
 
     @property

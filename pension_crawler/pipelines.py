@@ -30,6 +30,37 @@ class BasePipeline(object):
             pass
 
 
+class IsDownloadedPipeline(BasePipeline):
+
+    '''A pipeline for determining if PDF is downloaded or not.'''
+
+    # constructor
+
+    def __init__(self, fnames, *args, **kwargs):
+        '''Set file names set.'''
+        self.fnames = fnames
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        '''Pass data to constructor.'''
+        fnames_dir = crawler.settings.get('FILES_STORE')
+        if not fnames_dir:
+            raise NotConfigured('Download directory not specified.')
+        fnames_dir = os.path.join(fnames_dir, 'full')
+        fnames = {f.split('.')[0] for f in os.listdir(fnames_dir)}
+        return cls(fnames)
+
+    def process_item(self, item, *args, **kwargs):
+        '''Check if PDF filen name hash is in seen hashes.'''
+        path = self._path(item)
+        if not path:
+            item['downloaded'] = ''
+        else:
+            fname = path.split('.')[0].replace('full/', '')
+            item['downloaded'] = fname in self.fnames
+        return item
+
+
 class PDFPipeline(BasePipeline):
 
     '''A pipeline for parsing year from PDF files.'''
