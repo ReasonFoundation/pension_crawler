@@ -76,7 +76,8 @@ function configure_python() {
 # Add weekly cronjob
 
 function configure_cron() {
-  JOB="1 0 * * 0 cd /home/reason/pension_crawler/ && scrapy crawl sites"
+  SCRAPY="/usr/local/bin/scrapy"
+  JOB="1 0 * * 0 cd /home/reason/pension_crawler/ && $SCRAPY crawl sites"
   (crontab -u reason -l ; echo "$JOB") | crontab -u reason -
   sudo systemctl restart cron.service
   _print "Cronjob started."
