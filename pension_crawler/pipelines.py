@@ -145,7 +145,7 @@ class CSVPipeline(BasePipeline):
         data = {}
         for key in self.exporter.fields_to_export:
             if key == 'path':
-                data['path'] = self._path(item)
+                data['path'] = os.path.join('downloads', self._path(item))
             else:
                 data[key] = item.get(key)
         self.exporter.export_item(data)
