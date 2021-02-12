@@ -29,6 +29,7 @@ class SitesSpider(BaseSpider):
         super(SitesSpider, self).__init__(*args, **kwargs)
         self.crawler = crawler
         self.data = data
+        self.years = [str(year) for year in range(1960,2019,1)]
 
     # class methods
 
@@ -59,6 +60,34 @@ class SitesSpider(BaseSpider):
         loader.add_xpath('text', 'text()')
         loader.add_value('file_urls', [href])
         loader.add_value('timestamp', datetime.now().isoformat())
+        
+        '''
+        Code added by Joseph J. Bautista
+        - Context: Some links were missing in the output.csv file while it was clear that the year
+        was present in the link. This is the proposed solution for that.
+        '''
+        href = href.split('/')[-1].split('.')[0]
+        i = 0
+        year_stack = []
+        for year in self.years:
+            if year in link:
+                i = i + 1
+                year_stack.append(year)
+            elif "FY{}".format(year[-2:]) in link:
+                i = i + 1
+                year_stack.append(year)
+            elif "FY-{}".format(year[-2:]) in link:
+                i = i + 1
+                year_stack.append(year)
+            elif "fy{}".format(year[-2:]) in link:
+                i = i + 1
+            elif "fy-{}".format(year[-2:]) in link:
+                i = i + 1
+        if == 1:
+            loader.add_value('year', year)
+        elif i > 1:
+            loader.add_value('year', year_stack[-1])
+        
         return loader.load_item()
 
     def _process_year(self, node):
