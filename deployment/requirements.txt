@@ -43,7 +43,7 @@ python-pptx==0.6.5
 queuelib==1.4.2
 requests==2.18.4
 requests-file==1.4.3
-Scrapy==1.5.0
+Scrapy==2.6.2
 scrapyd==1.2.0
 scrapyd-client==1.1.0
 service-identity==17.0.0
