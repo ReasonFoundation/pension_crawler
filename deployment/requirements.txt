@@ -4,7 +4,7 @@ astroid==1.6.1
 attrs==17.4.0
 Automat==0.6.0
 beautifulsoup4==4.5.3
-certifi==2018.1.18
+certifi==2022.12.7
 cffi==1.11.5
 chardet==3.0.4
 constantly==15.1.0
